@@ -21,8 +21,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 from database import get_kb_docs
 from config import RAG_TOP_K
 
+from langsmith import traceable
 
 class RAGAgent:
+    @traceable(
+    name="RAG Agent Initialization",
+    run_type="chain",
+    )
     def __init__(self):
         self.docs = get_kb_docs()
         self.corpus = [d["content"] for d in self.docs]
@@ -31,7 +36,11 @@ class RAGAgent:
         if self.corpus:
             self.vectorizer = TfidfVectorizer(stop_words="english")
             self.matrix = self.vectorizer.fit_transform(self.corpus)
-
+    
+    @traceable(
+        name="RAG Retrieval",
+        run_type="retriever",
+    )
     def retrieve(self, query: str, top_k: int = RAG_TOP_K):
         """Return up to top_k relevant KB docs above a similarity threshold."""
         if not self.corpus or self.vectorizer is None:

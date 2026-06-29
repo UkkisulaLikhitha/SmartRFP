@@ -25,6 +25,7 @@ missing-info) from the PRD.
 
 import re
 from llm import chat
+from langsmith import traceable
 
 # --------------------------------------------------------------------------- #
 #  Prompts
@@ -63,7 +64,10 @@ def _ctx(docs):
         return "(no matching internal document found)"
     return "\n\n".join(f"[{d['title']} | {d['doc_type']}] {d['content']}" for d in docs)
 
-
+@traceable(
+    name="LLM Prompt",
+    run_type="prompt",
+)
 def _ask(prompt, context, max_tokens=420, temperature=0.4):
     user = f"CONTEXT:\n{context}\n\n{prompt}"
     return chat(SYSTEM, user, temperature=temperature, max_tokens=max_tokens).strip()
@@ -92,6 +96,10 @@ def _sec(title, content, source, flag=(None, None, "high")):
 # --------------------------------------------------------------------------- #
 #  Main
 # --------------------------------------------------------------------------- #
+@traceable(
+    name="Draft Generator",
+    run_type="chain",
+)
 def generate_draft(requirements, rag_agent, pricing_lines, web_insight=None,
                    max_sections=12):
     sections = []

@@ -50,6 +50,7 @@ streamlit run app.py
 ```
 
 Then open the URL it prints (usually http://localhost:8501).
+Prometheus Metrics available at: http://localhost:8000/metrics
 
 > **No Groq key?** The app still runs in **demo mode** — it produces deterministic,
 > source-grounded drafts so you can see the full flow. Add a key any time for real
@@ -89,6 +90,8 @@ smartrfp/
 ├── seed_data.py          # seeds the knowledge base
 ├── demo_seed.py          # seeds sample RFPs so the dashboard looks populated
 ├── test_pipeline.py       # End-to-end backend test
+├── evaluation.py          # stores all evaluatiuon metrics
+├── metrics.py          # computes application run metrics
 ├── requirements.txt
 ├── .env.example
 ├── agents/

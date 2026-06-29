@@ -23,6 +23,12 @@ from config import RAG_TOP_K
 
 from langsmith import traceable
 
+from metrics import (
+    RAG_QUERIES,
+    RAG_RESULTS,
+    RAG_EMPTY,
+)
+
 class RAGAgent:
     @traceable(
     name="RAG Agent Initialization",
@@ -42,6 +48,7 @@ class RAGAgent:
         run_type="retriever",
     )
     def retrieve(self, query: str, top_k: int = RAG_TOP_K):
+        RAG_QUERIES.inc()
         """Return up to top_k relevant KB docs above a similarity threshold."""
         if not self.corpus or self.vectorizer is None:
             return []
@@ -60,4 +67,8 @@ class RAGAgent:
                 "content": d["content"],
                 "score": round(score, 3),
             })
+        RAG_RESULTS.observe(len(results))
+
+        if len(results) == 0:
+            RAG_EMPTY.inc()
         return results

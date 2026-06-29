@@ -17,13 +17,19 @@ import sqlite3
 from datetime import datetime
 from config import DB_PATH
 
-
 def get_conn():
-    """Return a sqlite3 connection with row access by column name."""
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+    conn = sqlite3.connect(
+        DB_PATH,
+        timeout=30,
+        check_same_thread=False,
+    )
 
+    conn.row_factory = sqlite3.Row
+
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA busy_timeout = 30000;")
+
+    return conn
 
 def init_db():
     """Create all tables if they do not already exist."""
@@ -90,6 +96,27 @@ def init_db():
             FOREIGN KEY (rfp_id) REFERENCES rfps(id)
         )
     """)
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS evaluation_metrics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        rfp_id INTEGER,
+        proposal_completeness REAL,
+        average_confidence REAL,
+        context_coverage REAL,
+        hallucination_flags INTEGER,
+        pricing_freshness REAL,
+        sections_generated INTEGER,
+        requirements_extracted INTEGER,
+        evaluated_at TEXT,
+        runtime_seconds REAL,
+        knowledge_documents INTEGER,
+        pricing_items INTEGER,
+        llm_calls INTEGER,
+        demo_mode INTEGER,
+        FOREIGN KEY (rfp_id) REFERENCES rfps(id)
+    )
+""")
 
     c.execute("""
         CREATE TABLE IF NOT EXISTS knowledge_base (
@@ -181,7 +208,7 @@ def list_rfps():
 
 def delete_rfp(rfp_id):
     conn = get_conn()
-    for t in ("requirements", "draft_sections", "pricing", "audit_log"):
+    for t in ("requirements", "draft_sections", "pricing", "evaluation_metrics", "audit_log"):
         conn.execute(f"DELETE FROM {t} WHERE rfp_id=?", (rfp_id,))
     conn.execute("DELETE FROM rfps WHERE id=?", (rfp_id,))
     conn.commit()
@@ -260,6 +287,76 @@ def get_pricing(rfp_id):
     rows = conn.execute("SELECT * FROM pricing WHERE rfp_id=?", (rfp_id,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+# Evaluation Metrics
+def save_evaluation_metrics(rfp_id, metrics):
+    """
+    Store evaluation metrics for an RFP.
+    """
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    conn = get_conn()
+
+    conn.execute(
+        "DELETE FROM evaluation_metrics WHERE rfp_id=?",
+        (rfp_id,),
+    )
+
+    conn.execute("""
+        INSERT INTO evaluation_metrics (
+            rfp_id,
+            proposal_completeness,
+            average_confidence,
+            context_coverage,
+            hallucination_flags,
+            pricing_freshness,
+            sections_generated,
+            requirements_extracted,
+            evaluated_at,
+            runtime_seconds,
+            knowledge_documents,
+            pricing_items,
+            llm_calls,
+            demo_mode
+        )
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    """, (
+        rfp_id,
+        metrics["proposal_completeness"],
+        metrics["average_confidence"],
+        metrics["context_coverage"],
+        metrics["hallucination_flags"],
+        metrics["pricing_freshness"],
+        metrics["sections_generated"],
+        metrics["requirements"],
+        metrics["runtime_seconds"],
+        metrics["knowledge_documents"],
+        metrics["pricing_items"],
+        metrics["llm_calls"],
+        1 if metrics["demo_mode"] else 0,
+        now,
+    ))
+
+    conn.commit()
+    conn.close()
+
+def get_evaluation_metrics(rfp_id):
+    conn = get_conn()
+
+    row = conn.execute(
+        """
+        SELECT *
+        FROM evaluation_metrics
+        WHERE rfp_id=?
+        """,
+        (rfp_id,),
+    ).fetchone()
+
+    conn.close()
+
+    return dict(row) if row else None
+
 
 
 # --------------------------------------------------------------------------- #

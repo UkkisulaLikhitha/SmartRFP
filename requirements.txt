@@ -9,6 +9,9 @@ scikit-learn==1.8.0
 pandas==3.0.2
 python-dotenv==1.2.2
 prometheus-client==0.22.1
+fastapi
+uvicorn
+python-multipart
 
 # Optional: enables real live web insights in Agent 2 if TAVILY_API_KEY is set
 # tavily-python==0.5.0

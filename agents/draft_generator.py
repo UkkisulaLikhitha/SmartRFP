@@ -87,11 +87,28 @@ def _flag(content, has_sources):
                 "this client's region and requirements.", "medium")
     return (None, None, "high")
 
+def _sec(
+    title,
+    content,
+    source,
+    flag=(None,None,"high"),
+    retrieved_docs=None,
+    prompt_context="",
+    requirement=None,
+):
+    return {
+        "section_title": title,
+        "content": content,
+        "source": source,
 
-def _sec(title, content, source, flag=(None, None, "high")):
-    return {"section_title": title, "content": content, "source": source,
-            "flag_type": flag[0], "flag_note": flag[1], "confidence": flag[2]}
+        "retrieved_docs": retrieved_docs or [],
+        "prompt_context": prompt_context,
+        "requirement": requirement,
 
+        "flag_type": flag[0],
+        "flag_note": flag[1],
+        "confidence": flag[2],
+    }
 
 # --------------------------------------------------------------------------- #
 #  Main
@@ -128,11 +145,23 @@ def generate_draft(requirements, rag_agent, pricing_lines, web_insight=None,
                          "RFP (parsed by Extractor)", (None, None, "high")))
 
     # ---- Proposed Technical Solution (LLM, grounded) ---------------------- #
-    tech_ctx = rag_agent.retrieve("technical solution architecture platform")
+    tech_query = "technical solution architecture platform"
+
+    tech_ctx = rag_agent.retrieve(tech_query)
+
     tech = _ask(P_TECH, _ctx(tech_ctx), max_tokens=460)
-    sections.append(_sec("Proposed Technical Solution", tech,
-                         ", ".join(d["title"] for d in tech_ctx) if tech_ctx else "Synthesised",
-                         _flag(tech, bool(tech_ctx))))
+
+    sections.append(
+        _sec(
+            "Proposed Technical Solution",
+            tech,
+            ", ".join(d["title"] for d in tech_ctx) if tech_ctx else "Synthesised",
+            _flag(tech, bool(tech_ctx)),
+            retrieved_docs=tech_ctx,
+            prompt_context=_ctx(tech_ctx),
+            requirement="technical solution architecture platform"
+        )
+    )
 
     # ---- Implementation Plan (deterministic, phased) ---------------------- #
     plan = ("Our delivery follows a structured, phased approach to minimise risk:\n\n"

@@ -1,5 +1,7 @@
 from statistics import mean
 import llm
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 CONFIDENCE_MAP = {
     "high": 1.0,
@@ -99,29 +101,208 @@ def evaluate_pipeline(
 
     llm_calls = 5          # Executive, Overview, Technical, Security, Conclusion
 
+    def similarity(a, b):
+        if not a or not b:
+            return 0
+
+        vect = TfidfVectorizer(stop_words="english")
+
+        X = vect.fit_transform([a, b])
+
+        return float(cosine_similarity(X[0], X[1])[0][0])
+
+    faithfulness_scores = []
+
+    for sec in sections:
+
+        docs = sec.get("retrieved_docs", [])
+
+        if not docs:
+            continue
+
+        context = " ".join(d["content"] for d in docs)
+
+        faithfulness_scores.append(
+
+            similarity(
+                sec["content"],
+                context,
+            )
+
+        )
+
+    faithfulness = round(
+        mean(faithfulness_scores),
+        2,
+    ) if faithfulness_scores else 0
+
+    answer_scores = []
+
+    for sec in sections:
+
+        req = sec.get("requirement")
+
+        if not req:
+            continue
+
+        answer_scores.append(
+
+            similarity(
+                req,
+                sec["content"],
+            )
+
+        )
+
+    answer_relevancy = round(
+        mean(answer_scores),
+        2,
+    ) if answer_scores else 0
+
+    precision_scores = []
+
+    for sec in sections:
+
+        docs = sec.get("retrieved_docs", [])
+
+        if not docs:
+            continue
+
+        useful = 0
+
+        for d in docs:
+
+            if similarity(
+                sec["content"],
+                d["content"],
+            ) > 0.30:
+
+                useful += 1
+
+        precision_scores.append(
+            useful / len(docs)
+        )
+
+    context_precision = round(
+        mean(precision_scores),
+        2,
+    ) if precision_scores else 0
+
+    recall_scores = []
+
+    for sec in sections:
+
+        req = sec.get("requirement")
+
+        docs = sec.get("retrieved_docs", [])
+
+        if not docs:
+            continue
+
+        covered = 0
+
+        for d in docs:
+
+            if similarity(
+                req,
+                d["content"],
+            ) > 0.30:
+
+                covered += 1
+
+        recall_scores.append(
+            covered / len(docs)
+        )
+
+    context_recall = round(
+        mean(recall_scores),
+        2,
+    ) if recall_scores else 0
+
+    hits = []
+
+    for sec in sections:
+
+        docs = sec.get("retrieved_docs", [])
+
+        hits.append(
+
+            int(
+                any(d["score"] > 0.30 for d in docs)
+            )
+
+        )
+
+    hit_rate = round(
+        mean(hits),
+        2,
+    )
+
+    mrr_scores = []
+
+    for sec in sections:
+
+        docs = sec.get("retrieved_docs", [])
+
+        rr = 0
+
+        for rank, doc in enumerate(docs, 1):
+
+            if doc["score"] > 0.30:
+
+                rr = 1 / rank
+
+                break
+
+        mrr_scores.append(rr)
+
+    mrr = round(
+        mean(mrr_scores),
+        2,
+    )
+
+    overlap = []
+
+    for sec in sections:
+
+        docs = sec.get("retrieved_docs", [])
+
+        for i in range(len(docs)):
+
+            for j in range(i + 1, len(docs)):
+
+                overlap.append(
+
+                    similarity(
+                        docs[i]["content"],
+                        docs[j]["content"],
+                    )
+
+                )
+
+    chunk_overlap = round(
+        mean(overlap),
+        2,
+    ) if overlap else 0
+
     return {
-
         "requirements": len(requirements),
-
         "sections_generated": len(sections),
-
         "proposal_completeness": proposal_completeness,
-
         "average_confidence": average_confidence,
-
         "context_coverage": context_coverage,
-
         "hallucination_flags": hallucination_flags,
-
         "pricing_freshness": pricing_freshness,
-
         "runtime_seconds": round(runtime_seconds, 2),
-
         "knowledge_documents": kb_documents,
-
         "pricing_items": pricing_items,
-
         "llm_calls": llm_calls,
-
         "demo_mode": llm_demo_mode,
+        "faithfulness": faithfulness,
+        "answer_relevancy": answer_relevancy,
+        "context_precision": context_precision,
+        "context_recall": context_recall,
+        "mrr": mrr,
+        "hit_rate": hit_rate,
+        "chunk_overlap": chunk_overlap,
     }

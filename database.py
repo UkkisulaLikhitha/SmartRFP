@@ -114,8 +114,15 @@ def init_db():
         pricing_items INTEGER,
         llm_calls INTEGER,
         demo_mode INTEGER,
+        faithfulness REAL,
+        answer_relevancy REAL,
+        context_precision REAL,
+        context_recall REAL,
+        mrr REAL,
+        hit_rate REAL,
+        chunk_overlap REAL,
         FOREIGN KEY (rfp_id) REFERENCES rfps(id)
-    )
+)
 """)
 
     c.execute("""
@@ -313,15 +320,22 @@ def save_evaluation_metrics(rfp_id, metrics):
             pricing_freshness,
             sections_generated,
             requirements_extracted,
-            evaluated_at,
             runtime_seconds,
             knowledge_documents,
             pricing_items,
             llm_calls,
-            demo_mode
+            demo_mode,
+            faithfulness,
+            answer_relevancy,
+            context_precision,
+            context_recall,
+            mrr,
+            hit_rate,
+            chunk_overlap,
+            evaluated_at
         )
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """, (
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", 
+        (
         rfp_id,
         metrics["proposal_completeness"],
         metrics["average_confidence"],
@@ -335,7 +349,14 @@ def save_evaluation_metrics(rfp_id, metrics):
         metrics["pricing_items"],
         metrics["llm_calls"],
         1 if metrics["demo_mode"] else 0,
-        now,
+        metrics["faithfulness"],
+        metrics["answer_relevancy"],
+        metrics["context_precision"],
+        metrics["context_recall"],
+        metrics["mrr"],
+        metrics["hit_rate"],
+        metrics["chunk_overlap"],
+        now
     ))
 
     conn.commit()

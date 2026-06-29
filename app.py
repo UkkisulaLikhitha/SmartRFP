@@ -27,11 +27,24 @@ from utils.exporter import export_txt, export_docx, export_pdf
 from pipeline import run_pipeline
 from llm import llm_available, ping as groq_ping
 
+from prometheus_client import start_http_server
+
 # --------------------------------------------------------------------------- #
 st.set_page_config(page_title=f"{APP_NAME} — RFP Analysis", page_icon="📄",
                    layout="wide", initial_sidebar_state="expanded")
 
 db.init_db()
+
+import threading
+
+if "metrics_started" not in st.session_state:
+    threading.Thread(
+        target=start_http_server,
+        args=(8000,),
+        daemon=True,
+    ).start()
+
+    st.session_state.metrics_started = True
 
 ss = st.session_state
 # Seed knowledge base + demo RFPs ONCE per session. Combined with the persistent
@@ -210,7 +223,7 @@ def pill(text, cls=None):
 #  SIDEBAR
 # =========================================================================== #
 NAV = [("Upload", "☁️"), ("Dashboard", "📊"), ("Resource Cost", "💲"),
-       ("Human Review", "🗂️"), ("Export", "📤"), ("Settings", "⚙️"), ("Help & Docs", "❓")]
+       ("Human Review", "🗂️"), ("Export", "📤"), ("AI Evaluation", "🔎"), ("Settings", "⚙️"), ("Help & Docs", "❓")]
 
 with st.sidebar:
     st.markdown(f"<div class='brand'><div class='logo'>📄</div><div>"
@@ -753,6 +766,103 @@ def page_export():
 
 
 # =========================================================================== #
+#  PAGE: AI Evaluation
+# =========================================================================== #
+def llm_eval():
+    topbar("AI Evaluation", "Check performance of LLM calls.", show_rfp=True)
+    rfp = current_rfp()
+    evaluation = db.get_evaluation_metrics(rfp["id"]) if rfp else None
+
+    if evaluation:
+        overall_score = (
+            evaluation["proposal_completeness"]
+            + evaluation["average_confidence"]
+            + evaluation["context_coverage"]
+            + evaluation["pricing_freshness"]
+        ) / 4
+    left, middle, right = st.columns([1,2,1])
+
+    with left:
+
+        st.metric(
+            "Overall AI Quality Score",
+            f"{overall_score*100:.1f}%"
+        )
+
+    cols = st.columns(4)
+
+    metric(
+        cols[0],
+        "ic-green",
+        "✅",
+        "Completeness",
+        f"{evaluation['proposal_completeness']*100:.0f}%",
+        "Proposal"
+    )
+
+    metric(
+        cols[1],
+        "ic-blue",
+        "📚",
+        "Context",
+        f"{evaluation['context_coverage']*100:.0f}%",
+        "Grounded"
+    )
+
+    metric(
+        cols[2],
+        "ic-purple",
+        "🎯",
+        "Confidence",
+        f"{evaluation['average_confidence']:.2f}",
+        "LLM"
+    )
+
+    metric(
+        cols[3],
+        "ic-red",
+        "⚠️",
+        "Flags",
+        str(evaluation["hallucination_flags"]),
+        "Review"
+    )
+
+    with card("AI Quality Indicators"):
+        st.write("Proposal Completeness")
+        st.progress(evaluation["proposal_completeness"])
+
+        st.write("Average Confidence")
+        st.progress(evaluation["average_confidence"])
+
+        st.write("Context Coverage")
+        st.progress(evaluation["context_coverage"])
+
+        st.write("Pricing Freshness")
+        st.progress(evaluation["pricing_freshness"])
+
+    stats = pd.DataFrame({
+        "Metric":[
+            "Pipeline Runtime",
+            "LLM Calls",
+            "Knowledge Base Documents",
+            "Pricing Items"
+        ],
+
+        "Value":[
+            f"{evaluation['runtime_seconds']} sec",
+            evaluation["llm_calls"],
+            evaluation["knowledge_documents"],
+            evaluation["pricing_items"]
+        ]
+    })
+
+    st.dataframe(
+        stats,
+        use_container_width=True,
+        hide_index=True
+    )
+
+# =========================================================================== #
 #  PAGE: Settings
 # =========================================================================== #
 def page_settings():
@@ -1059,6 +1169,6 @@ def page_help():
 #  ROUTER
 # =========================================================================== #
 PAGES = {"Upload": page_upload, "Dashboard": page_dashboard, "Resource Cost": page_resource_cost,
-         "Human Review": page_review, "Export": page_export, "Settings": page_settings,
+         "Human Review": page_review, "Export": page_export, "AI Evaluation": llm_eval, "Settings": page_settings,
          "Help & Docs": page_help}
 PAGES.get(ss.page, page_dashboard)()

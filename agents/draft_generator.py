@@ -102,6 +102,10 @@ def _sec(title, content, source, flag=(None, None, "high")):
 )
 def generate_draft(requirements, rag_agent, pricing_lines, web_insight=None,
                    max_sections=12):
+    
+    print(">>> generate_draft entered")
+    print(type(generate_draft))
+    print(generate_draft)
     sections = []
     all_reqs = "\n".join(f"- {r['text']}" for r in requirements[:14]) or "(no requirements parsed)"
 

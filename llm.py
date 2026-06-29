@@ -18,6 +18,13 @@ import time
 
 from langsmith import traceable
 
+from metrics import (
+    LLM_REQUESTS,
+    LLM_ERRORS,
+    LLM_LATENCY,
+    LLM_DEMO_MODE,
+)
+
 _client = None
 _last_error = ""          # human-readable reason the last Groq call failed
 _used_demo = False        # True if the most recent chat() used the demo fallback
@@ -66,6 +73,7 @@ def ping() -> dict:
     if not config.GROQ_API_KEY:
         return {"ok": False, "model": config.GROQ_MODEL,
                 "message": "No GROQ_API_KEY found. Add it to your .env file."}
+        LLM_DEMO_MODE.inc()
     client = _get_client()
     if client is None:
         return {"ok": False, "model": config.GROQ_MODEL, "message": _last_error}
@@ -95,6 +103,7 @@ def chat(system_prompt: str, user_prompt: str, temperature: float = 0.3,
     """
     global _last_error, _used_demo
     client = _get_client()
+    LLM_REQUESTS.inc()
     start_time = time.perf_counter()
     if client is None:
         _used_demo = True
@@ -113,7 +122,9 @@ def chat(system_prompt: str, user_prompt: str, temperature: float = 0.3,
         _last_error = ""
         _used_demo = False
         elapsed = time.perf_counter() - start_time
-
+        LLM_LATENCY.observe(
+            time.perf_counter() - start_time
+        )
         print(
             f"[LLM] Model={config.GROQ_MODEL} "
             f"Latency={elapsed:.2f}s"
@@ -129,6 +140,8 @@ def chat(system_prompt: str, user_prompt: str, temperature: float = 0.3,
         _last_error = str(e)
         _used_demo = True
         print(f"[llm] Groq call failed, using demo fallback: {e}")
+        LLM_ERRORS.inc()
+        LLM_DEMO_MODE.inc()
         return _demo_response(user_prompt, error=str(e))
 
 

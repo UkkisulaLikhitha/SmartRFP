@@ -18,6 +18,11 @@ import random
 from datetime import datetime, timedelta
 from langsmith import traceable
 
+from metrics import (
+    PRICING_REQUESTS,
+    PRICING_ITEMS,
+)
+
 # A tiny rate card used to build a realistic, deterministic estimate.
 RATE_CARD = {
     "cloud":      ("Compute / Cloud SKU (x12)", 12, 17833.0, "pricing-api"),
@@ -107,9 +112,11 @@ def _optional_web_insight(rfp_text: str):
     run_type="chain",
 )
 def fetch_pricing(rfp_text: str):
+    PRICING_REQUESTS.inc()
     """
     Public entry point. Returns (pricing_lines, web_insight_or_None).
     """
     lines = _mock_pricing(rfp_text)
     insight = _optional_web_insight(rfp_text)
+    PRICING_ITEMS.observe(len(lines))
     return lines, insight

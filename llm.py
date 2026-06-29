@@ -14,6 +14,10 @@ not working (invalid key, decommissioned model, network, quota, etc.).
 
 import config
 
+import time
+
+from langsmith import traceable
+
 _client = None
 _last_error = ""          # human-readable reason the last Groq call failed
 _used_demo = False        # True if the most recent chat() used the demo fallback
@@ -79,7 +83,10 @@ def ping() -> dict:
         _last_error = str(e)
         return {"ok": False, "model": config.GROQ_MODEL, "message": str(e)}
 
-
+@traceable(
+    name="Groq Chat",
+    run_type="llm",
+)
 def chat(system_prompt: str, user_prompt: str, temperature: float = 0.3,
          max_tokens: int = 900) -> str:
     """
@@ -88,6 +95,7 @@ def chat(system_prompt: str, user_prompt: str, temperature: float = 0.3,
     """
     global _last_error, _used_demo
     client = _get_client()
+    start_time = time.perf_counter()
     if client is None:
         _used_demo = True
         return _demo_response(user_prompt)
@@ -101,10 +109,22 @@ def chat(system_prompt: str, user_prompt: str, temperature: float = 0.3,
             temperature=temperature,
             max_tokens=max_tokens,
         )
+        print(resp.usage)
         _last_error = ""
         _used_demo = False
+        elapsed = time.perf_counter() - start_time
+
+        print(
+            f"[LLM] Model={config.GROQ_MODEL} "
+            f"Latency={elapsed:.2f}s"
+        )
+
         return resp.choices[0].message.content.strip()
     except Exception as e:
+        elapsed = time.perf_counter() - start_time
+        print(
+            f"[LLM] Failed after {elapsed:.2f}s : {e}"
+        )
         # Network / model / quota error -> don't crash the pipeline
         _last_error = str(e)
         _used_demo = True

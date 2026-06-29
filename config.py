@@ -20,6 +20,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 _PLACEHOLDERS = {
     "", "gsk_your_key_here", "gsk_your_real_key_here", "your_key_here",
     "gsk_xxxxxxxxxxxxxxxxxxxx", "gsk_xxx", "changeme",
+    "lsv2_pt_your_key_here",
+    "lsv2_pt_xxxxxxxxx",
 }
 
 
@@ -78,6 +80,28 @@ if GROQ_API_KEY in _PLACEHOLDERS:
 # Good current choices (June 2026): "openai/gpt-oss-20b" (fast, free tier),
 # "openai/gpt-oss-120b" (higher quality), "qwen/qwen3.6-27b".
 GROQ_MODEL = _clean(os.getenv("GROQ_MODEL", "")) or "openai/gpt-oss-20b"
+
+#LangSmith integration
+# ---- LangSmith -------------------------------------------------------------
+
+LANGSMITH_API_KEY = _clean(os.getenv("LANGSMITH_API_KEY", ""))
+if LANGSMITH_API_KEY in _PLACEHOLDERS:
+    LANGSMITH_API_KEY = ""
+
+LANGSMITH_PROJECT = (
+    _clean(os.getenv("LANGSMITH_PROJECT", ""))
+    or "SmartRFP"
+)
+
+LANGSMITH_ENDPOINT = (
+    _clean(os.getenv("LANGSMITH_ENDPOINT", ""))
+    or "https://api.smith.langchain.com"
+)
+
+LANGSMITH_TRACING = (
+    _clean(os.getenv("LANGSMITH_TRACING", "true")).lower()
+    == "true"
+)
 
 # ---- App constants ---------------------------------------------------------
 APP_NAME = "SmartRFP"

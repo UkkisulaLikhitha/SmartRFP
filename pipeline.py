@@ -18,7 +18,12 @@ from agents.pricing_agent import fetch_pricing
 from agents.draft_generator import generate_draft
 import database as db
 
+from langsmith import traceable, trace
 
+@traceable(
+    name="SmartRFP Pipeline",
+    run_type="chain",
+)
 def run_pipeline(rfp_id, raw_text, use_web_search=True, progress=None):
     """
     Execute the full end-to-end flow for one RFP.
@@ -31,20 +36,26 @@ def run_pipeline(rfp_id, raw_text, use_web_search=True, progress=None):
 
     # ---- F1: parse & extract requirements ---------------------------------
     step("Parsing & extracting requirements (F1)…", 0.15)
-    requirements = extract_requirements(raw_text)
+    with trace(
+    "Requirement Extraction",
+    run_type="chain"):
+        requirements = extract_requirements(raw_text)
     db.save_requirements(rfp_id, requirements)
     db.log_action(rfp_id, "Parsed", "System",
                   f"{len(requirements)} requirements extracted")
 
     # ---- F2 + F3: run both agents in PARALLEL ------------------------------
     step("Running Agent 1 (RAG) and Agent 2 (Pricing) in parallel…", 0.45)
-    rag_agent = RAGAgent()
+    with trace(
+    "Parallel Agent Execution",
+    run_type="chain"):
+        rag_agent = RAGAgent()
 
-    with ThreadPoolExecutor(max_workers=2) as ex:
-        # Agent 2 (pricing/web) runs in its own thread
-        pricing_future = ex.submit(fetch_pricing, raw_text)
-        # Agent 1 is initialized above; retrieval happens during synthesis.
-        pricing_lines, web_insight = pricing_future.result()
+        with ThreadPoolExecutor(max_workers=2) as ex:
+            # Agent 2 (pricing/web) runs in its own thread
+            pricing_future = ex.submit(fetch_pricing, raw_text)
+            # Agent 1 is initialized above; retrieval happens during synthesis.
+            pricing_lines, web_insight = pricing_future.result()
 
     if not use_web_search:
         web_insight = None
@@ -56,7 +67,10 @@ def run_pipeline(rfp_id, raw_text, use_web_search=True, progress=None):
 
     # ---- F4: synthesize the draft -----------------------------------------
     step("Synthesizing draft (F4)…", 0.8)
-    sections = generate_draft(requirements, rag_agent, pricing_lines, web_insight)
+    with trace(
+    "Draft Generation",
+    run_type="chain"):
+        sections = generate_draft(requirements, rag_agent, pricing_lines, web_insight)
     db.save_draft_sections(rfp_id, sections)
 
     num_flags = sum(1 for s in sections if s.get("flag_type"))

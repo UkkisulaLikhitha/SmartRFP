@@ -16,6 +16,7 @@ Hooks for real data:
 import os
 import random
 from datetime import datetime, timedelta
+from langsmith import traceable
 
 # A tiny rate card used to build a realistic, deterministic estimate.
 RATE_CARD = {
@@ -33,7 +34,10 @@ def _keywords_in(text: str):
     t = (text or "").lower()
     return [k for k in RATE_CARD if k in t]
 
-
+@traceable(
+    name="Pricing Engine",
+    run_type="tool",
+)
 def _mock_pricing(rfp_text: str):
     """Build pricing lines based on keywords found in the RFP text."""
     now = datetime.now()
@@ -77,7 +81,10 @@ def _line(item, qty, unit_price, source, now, stale=False, precomputed_total=Non
         "stale": bool(stale),
     }
 
-
+@traceable(
+    name="Pricing Web Search",
+    run_type="tool",
+)
 def _optional_web_insight(rfp_text: str):
     """If TAVILY_API_KEY is set, fetch one live web insight. Otherwise return None."""
     key = os.getenv("TAVILY_API_KEY", "").strip()
@@ -95,7 +102,10 @@ def _optional_web_insight(rfp_text: str):
         print(f"[pricing] Tavily web insight failed: {e}")
         return None
 
-
+@traceable(
+    name="Pricing Agent",
+    run_type="chain",
+)
 def fetch_pricing(rfp_text: str):
     """
     Public entry point. Returns (pricing_lines, web_insight_or_None).

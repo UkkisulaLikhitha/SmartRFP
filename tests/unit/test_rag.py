@@ -18,7 +18,7 @@ def populate_kb():
     Supports PDF, DOCX and TXT.
     """
 
-    data_dir = Path(__file__).resolve().parents[1] / "data"
+    data_dir = Path(__file__).resolve().parents[2] / "sampleRFPs"
 
     supported = {".txt", ".pdf", ".docx"}
 

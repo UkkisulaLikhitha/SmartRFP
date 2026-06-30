@@ -193,7 +193,6 @@ NAV = [("Upload", "☁️"), ("Dashboard", "📊"), ("Resource Cost", "💲"),
        ("Human Review", "🗂️"), ("Export", "📤"), ("AI Evaluation", "🔎"), ("Settings", "⚙️"), ("Help & Docs", "❓")]
 
 with st.sidebar:
-    print('ínside')
     st.markdown(f"<div class='brand'><div class='logo'>📄</div><div>"
                 f"<div class='name'>Smart<span>RFP</span></div>"
                 f"<div class='sub'>{ss.get('workspace', 'AI-Powered RFP Analysis')}</div>"

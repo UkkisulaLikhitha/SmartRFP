@@ -1,0 +1,19 @@
+Enterprise Cloud Migration RFP
+
+1. Technical Requirements
+
+The vendor shall provide a cloud migration strategy.
+
+The solution must support multi-factor authentication.
+
+The platform should comply with ISO 27001.
+
+Please describe your disaster recovery approach.
+
+2. Pricing
+
+Provide a detailed cost estimate.
+
+3. Timeline
+
+Describe the implementation schedule.

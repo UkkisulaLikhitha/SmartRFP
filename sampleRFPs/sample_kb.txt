@@ -1,0 +1,15 @@
+Cloud Migration Methodology
+
+Our organisation follows a structured cloud migration process.
+
+Security
+
+All cloud deployments use MFA, encryption, logging and ISO 27001 controls.
+
+Implementation
+
+Projects follow Discovery, Build, Testing and Go Live phases.
+
+Pricing
+
+Typical enterprise migration projects include migration labour, cloud infrastructure and managed support.

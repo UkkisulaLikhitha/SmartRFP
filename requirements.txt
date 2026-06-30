@@ -15,6 +15,9 @@ python-multipart
 pytest
 pytest-mock
 coverage
+sqlalchemy 
+python-multipart
+pydantic
 
 # Optional: enables real live web insights in Agent 2 if TAVILY_API_KEY is set
 # tavily-python==0.5.0

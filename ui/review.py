@@ -68,7 +68,7 @@ def page_review():
                 else:
                     st.toast("Type a comment first.")
                 st.rerun()
-            if st.button("🔄 Regenerate Draft",cuse_container_width=True, key="regen_all"):
+            if st.button("🔄 Regenerate Draft", use_container_width=True, key="regen_all"):
                 with st.spinner("Regenerating draft..."):
                     result = regenerate(rfp["id"])
                 if result["success"]:

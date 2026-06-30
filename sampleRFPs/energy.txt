@@ -1,0 +1,13 @@
+Client: SolarWind Energy
+Ref: RFP-2026-ENERGY-1107
+Domain: Renewable Energy Project
+Region: North America
+Deadline: 10 Sep 2026
+
+Background: Solar/wind hybrid 50MW.
+
+Functional: Hybrid solution, storage.
+Non-Functional: SLA 99.95%.
+Compliance: Grid compliance.
+Commercials: Infrastructure, deployment, support.
+Evaluation: Technical 40%, Compliance 30%, Commercials 20%, Experience 10%.

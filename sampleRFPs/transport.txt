@@ -1,0 +1,13 @@
+Client: FleetMax Logistics
+Ref: RFP-2026-TRANS-1006
+Domain: Fleet Management
+Region: North America
+Deadline: 30 Aug 2026
+
+Background: Optimize fleet operations.
+
+Functional: GPS tracking, fuel monitoring.
+Non-Functional: SLA 99.9%.
+Compliance: API integration.
+Commercials: Fleet software, support.
+Evaluation: Technical 40%, Commercials 30%, Experience 30%.

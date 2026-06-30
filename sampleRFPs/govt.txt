@@ -1,0 +1,13 @@
+Client: City of Springfield
+Ref: RFP-2026-GOV-1208
+Domain: Smart City IoT
+Region: North America
+Deadline: 15 Sep 2026
+
+Background: IoT deployment for traffic and safety.
+
+Functional: Traffic monitoring, safety sensors.
+Non-Functional: SLA 99.9%.
+Compliance: Open standards.
+Commercials: IoT devices, deployment, support.
+Evaluation: Technical 40%, Compliance 30%, Commercials 20%, Experience 10%.

@@ -1,29 +1,22 @@
 from fastapi import APIRouter
-import database as db
 
-router = APIRouter()
+from backend.services import human_review
+
+router = APIRouter(
+    prefix="/review",
+    tags=["Review"]
+)
 
 
-
-
-@router.put("/review/{rfp_id}")
+@router.post("/{rfp_id}")
 def review(
     rfp_id: int,
-    status: str,
+    approved: bool,
+    comments: str = "",
 ):
 
-    db.update_rfp_status(
+    return human_review(
         rfp_id,
-        status
+        approved,
+        comments,
     )
-
-    db.log_action(
-        rfp_id,
-        "Human Review",
-        "Reviewer",
-        status
-    )
-
-    return {
-        "success": True
-    }

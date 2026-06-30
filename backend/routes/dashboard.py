@@ -1,27 +1,36 @@
-from fastapi import APIRouter
-import database as db
+from fastapi import APIRouter, HTTPException
 
-router = APIRouter()
+from backend.database import SessionLocal
+from backend import crud
 
-
-@router.get("/dashboard")
-def dashboard():
-
-    rfps = db.list_rfps()
-
-    return {
-        "projects": rfps
-    }
+router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 
-@router.get("/dashboard/{rfp_id}")
-def dashboard_details(rfp_id: int):
+@router.get("/rfps")
+def list_rfps():
 
-    return {
-        "rfp": db.get_rfp(rfp_id),
-        "requirements": db.get_requirements(rfp_id),
-        "draft": db.get_draft_sections(rfp_id),
-        "pricing": db.get_pricing(rfp_id),
-        "evaluation": db.get_evaluation_metrics(rfp_id),
-        "audit": db.get_audit_log(rfp_id),
-    }
+    db = SessionLocal()
+
+    try:
+        return crud.list_rfps(db)
+
+    finally:
+        db.close()
+
+
+@router.get("/rfps/{rfp_id}")
+def get_rfp(rfp_id: int):
+
+    db = SessionLocal()
+
+    try:
+
+        rfp = crud.get_rfp(db, rfp_id)
+
+        if not rfp:
+            raise HTTPException(status_code=404, detail="Not Found")
+
+        return rfp
+
+    finally:
+        db.close()

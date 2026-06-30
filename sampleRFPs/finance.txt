@@ -1,0 +1,13 @@
+Client: Horizon Bank
+Ref: RFP-2026-FIN-703
+Domain: Risk Management Software
+Region: North America
+Deadline: 12 Aug 2026
+
+Background: Fraud detection system.
+
+Functional: AI-driven fraud detection, compliance.
+Non-Functional: SLA 99.95%.
+Compliance: PCI DSS.
+Commercials: Software license, implementation, support.
+Evaluation: Technical 40%, Compliance 30%, Commercials 20%, Experience 10%.

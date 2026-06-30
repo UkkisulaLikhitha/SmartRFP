@@ -1,10 +1,13 @@
 from fastapi import APIRouter
-import database as db
 
-router = APIRouter()
+from backend.services import calculate_resource_cost
+
+router = APIRouter(
+    prefix="/pricing",
+    tags=["Pricing"]
+)
 
 
-@router.get("/pricing/{rfp_id}")
+@router.get("/{rfp_id}")
 def pricing(rfp_id: int):
-
-    return db.get_pricing(rfp_id)
+    return calculate_resource_cost(rfp_id)

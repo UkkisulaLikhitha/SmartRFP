@@ -158,7 +158,7 @@ def _demo_response(user_prompt: str, error: str = "") -> str:
 
     note = ""
     if error:
-        note = ("\n\n(Note: demo mode — the Groq call failed. Open Settings → "
+        note = ("\n\n(Note: demo mode — the Groq call failed."
                 "Test Groq connection to see the exact reason.)")
     elif not config.GROQ_API_KEY:
         note = ("\n\n(Note: demo mode — no GROQ_API_KEY set. Add one in .env for "

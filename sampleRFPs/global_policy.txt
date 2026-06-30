@@ -1,0 +1,69 @@
+RFP Generation Policy Document
+1. Purpose
+
+This policy establishes the governance, compliance, and operational framework for generating Request for Proposal (RFP) documents within the organization. It ensures consistency, regulatory adherence, and efficient resource allocation.
+2. Governance Framework
+
+    Ownership: The Procurement Office is the custodian of all RFP templates and processes.
+
+    Approval: All RFPs must be reviewed by the Legal & Compliance team before release.
+
+    Version Control: Each RFP must carry a unique reference number and version history.
+
+    Transparency: Vendors must receive identical information; no preferential disclosures.
+
+    Audit Trail: All RFP drafts, approvals, and communications must be logged for 7 years.
+
+3. Compliance Requirements
+
+    Regulatory Adherence: RFPs must comply with local procurement laws and industry regulations.
+
+    Security Standards: All IT-related RFPs must reference ISO 27001, SOC 2, or equivalent.
+
+    Data Residency: Requirements must specify regional data storage obligations.
+
+    Accessibility: RFPs must be published in formats accessible to all vendors (PDF/DOCX).
+
+4. GDPR & Data Protection
+
+    Personal Data Minimization: RFPs must avoid unnecessary collection of personal data.
+
+    Vendor Data Handling: Any vendor information collected must be encrypted (AES‑256).
+
+    Retention Policy: Vendor submissions retained for 5 years, then securely destroyed.
+
+    Consent: Vendors must acknowledge GDPR compliance in their responses.
+
+    Cross‑Border Transfers: Explicitly prohibited unless covered by Standard Contractual Clauses.
+
+5. Operational Capacity & Work Hours
+
+    Maximum Work Hours: Staff involved in RFP generation may not exceed 45 hours per week.
+
+    Minimum Staffing: At least 2 reviewers must validate each RFP before release.
+
+    Maximum Capacity: No more than 10 concurrent RFPs may be in drafting stage.
+
+    Minimum Capacity: At least 1 RFP cycle must be completed per quarter to maintain readiness.
+
+    Overtime Controls: Overtime requires written approval from the Procurement Director.
+
+6. Quality Assurance
+
+    Checklist Validation: Each RFP must pass a standardized checklist (scope, compliance, pricing, evaluation criteria).
+
+    Peer Review: Drafts must be reviewed by a second author to ensure accuracy.
+
+    Vendor Feedback Loop: Post‑RFP surveys must be conducted to improve future processes.
+
+7. Enforcement & Exceptions
+
+    Non‑Compliance: Any deviation from this policy must be reported to the Compliance Office.
+
+    Exceptions: May be granted only by the Chief Procurement Officer with documented justification.
+
+    Disciplinary Action: Repeated violations may result in suspension of RFP drafting privileges.
+
+8. Review Cycle
+
+This policy will be reviewed annually by the Governance Committee to ensure alignment with evolving regulations and organizational needs.

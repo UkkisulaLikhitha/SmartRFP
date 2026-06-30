@@ -2,8 +2,8 @@
 import pandas as pd
 import database as db
 
-from pipeline import run_pipeline
 from ui.ui_utils import (topbar,card,current_rfp, pill)
+from .api import (regenerate)
 
 # =========================================================================== #
 #  PAGE: Human Review
@@ -54,7 +54,8 @@ def page_review():
                 db.update_rfp_status(rfp["id"], "Approved")
                 db.log_action(rfp["id"], "Approved", reviewer,
                               comment.strip()[:80] or "Proposal approved")
-                st.toast("Proposal approved."); st.rerun()
+                st.toast("Proposal approved.")
+                st.rerun()
             if st.button("✏️ Request Changes", use_container_width=True, key="req_changes"):
                 db.update_rfp_status(rfp["id"], "In Review")
                 db.log_action(rfp["id"], "Changes requested", reviewer,
@@ -67,11 +68,14 @@ def page_review():
                 else:
                     st.toast("Type a comment first.")
                 st.rerun()
-            if st.button("🔄 Regenerate Draft", use_container_width=True, key="regen_all"):
-                bar = st.progress(0.0, text="Regenerating…")
-                run_pipeline(rfp["id"], rfp["raw_text"], bool(rfp["use_web_search"]),
-                             progress=lambda l, f: bar.progress(f, text=l))
-                bar.empty(); st.toast("Draft regenerated."); st.rerun()
+            if st.button("🔄 Regenerate Draft",cuse_container_width=True, key="regen_all"):
+                with st.spinner("Regenerating draft..."):
+                    result = regenerate(rfp["id"])
+                if result["success"]:
+                    st.toast("Draft regenerated.")
+                    st.rerun()
+                else:
+                    st.error(result["message"])
         with card("Review Information"):
             st.markdown(f"<div class='muted'>Reviewer</div><div class='b'>{reviewer}</div>"
                         f"<div class='muted' style='margin-top:.5rem'>Status</div><div>{pill(rfp['status'])}</div>"

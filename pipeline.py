@@ -17,6 +17,7 @@ from agents.rag_agent import RAGAgent
 from agents.pricing_agent import fetch_pricing
 from agents.draft_generator import generate_draft
 import database as db
+from backend import crud
 
 from langsmith import traceable, trace
 from evaluation import evaluate_pipeline
@@ -31,6 +32,69 @@ from metrics import (
     SECTIONS_GENERATED,
     HALLUCINATION_FLAGS,
 )
+
+class Repository:
+
+    def __init__(self, session=None):
+        self.session = session
+
+    def save_requirements(self, rfp_id, requirements):
+        if self.session:
+            crud.save_requirements(self.session, rfp_id, requirements)
+        else:
+            db.save_requirements(rfp_id, requirements)
+
+    def save_pricing(self, rfp_id, pricing):
+        if self.session:
+            crud.save_pricing(self.session, rfp_id, pricing)
+        else:
+            db.save_pricing(rfp_id, pricing)
+
+    def save_draft_sections(self, rfp_id, sections):
+        if self.session:
+            crud.save_draft_sections(self.session, rfp_id, sections)
+        else:
+            db.save_draft_sections(rfp_id, sections)
+
+    def save_evaluation(self, rfp_id, metrics):
+        if self.session:
+            crud.save_evaluation_metrics(self.session, rfp_id, metrics)
+        else:
+            db.save_evaluation_metrics(rfp_id, metrics)
+
+    def update_metrics(self, rfp_id, reqs, flags, status):
+        if self.session:
+            crud.update_rfp_metrics(
+                self.session,
+                rfp_id,
+                reqs,
+                flags,
+                status,
+            )
+        else:
+            db.update_rfp_metrics(
+                rfp_id,
+                reqs,
+                flags,
+                status,
+            )
+
+    def log(self, rfp_id, action, actor, detail=""):
+        if self.session:
+            crud.log_action(
+                self.session,
+                rfp_id,
+                action,
+                actor,
+                detail,
+            )
+        else:
+            db.log_action(
+                rfp_id,
+                action,
+                actor,
+                detail,
+            )
 
 @traceable(
     name="SmartRFP Pipeline",

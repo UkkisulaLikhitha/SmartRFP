@@ -4,7 +4,7 @@ import database as db
 from ui.ui_utils import (topbar, go)
 from config import (SUPPORTED_TYPES, MAX_UPLOAD_MB, REVIEWER_ROLES)
 from utils.file_handler import extract_text
-from pipeline import run_pipeline
+from .api import upload_rfp
 import state
 
 # =========================================================================== #
@@ -38,9 +38,22 @@ def page_upload():
         rid = db.create_rfp(deal or up.name, client, region, deadline, "", "",
                             up.name, raw, role, "", use_web)
         bar = st.progress(0.0, text="Starting…")
-        
-        run_pipeline(rid, raw, use_web, progress=lambda lab, f: bar.progress(f, text=lab))
-        bar.empty()
+        try:
+            result = upload_rfp(
+                uploaded_file=up,
+                deal_name=deal,
+                client_name=client,
+                region=region,
+                deadline=deadline,
+                assigned_role=role,
+                use_web_search=use_web,
+            )
+            bar.progress(1.0, text="Completed")
+            rid = result["rfp_id"]
+        except Exception as e:
+            st.error(str(e))
+        finally:
+            bar.empty()
         st.success("✅ Analysis complete. Opening Dashboard…")
         go("Dashboard", rid)
 

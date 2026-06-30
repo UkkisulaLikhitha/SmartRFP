@@ -1,0 +1,45 @@
+Client / Organisation: Sunrise Hospital Network
+RFP Reference Number: RFP-2026-HEALTH-305
+Solution Domain: Patient Management System
+Region: Europe
+Submission Deadline: 20 Jul 2026
+
+Background: Hospital network requires a HIPAA-compliant EHR system with mobile access and analytics.
+
+Functional Requirements:
+
+    Migrate existing patient records to cloud EHR
+
+    Mobile app for doctors and patients
+
+    Analytics dashboard for patient outcomes
+
+Non-Functional Requirements:
+
+    SLA 99.95% uptime
+
+    RTO 15 minutes, RPO 5 minutes
+
+Compliance & Security Requirements:
+
+    HIPAA, GDPR compliance
+
+    AES-256 encryption
+
+Commercials:
+
+    EHR license (per user per month)
+
+    Migration services (labor, 600 hours)
+
+    Support (per month)
+
+Evaluation Criteria:
+
+    Technical approach 35%
+
+    Compliance 30%
+
+    Commercials 20%
+
+    Experience 15%

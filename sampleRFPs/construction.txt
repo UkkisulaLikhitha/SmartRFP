@@ -1,0 +1,13 @@
+Client: MetroBuild Corp
+Ref: RFP-2026-CONST-501
+Domain: Commercial Building
+Region: North America
+Deadline: 30 Jul 2026
+
+Background: 10-story office building.
+
+Functional: Design, build, safety compliance.
+Non-Functional: LEED certification.
+Compliance: OSHA, local codes.
+Commercials: Construction phases, materials, labor.
+Evaluation: Technical 35%, Compliance 25%, Commercials 25%, Experience 15%.

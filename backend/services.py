@@ -2,7 +2,7 @@ from fastapi import UploadFile
 
 from backend.database import SessionLocal
 from backend import crud
-
+import traceback
 from utils.file_handler import extract_text
 from pipeline import run_pipeline
 
@@ -50,12 +50,16 @@ async def analyze_rfp(
     finally:
         db.close()
 
-    result = run_pipeline(
-        rfp_id=rfp_id,
-        raw_text=raw_text,
-        use_web_search=use_web_search,
-        progress=None,
-    )
+    try:
+        result = run_pipeline(
+            rfp_id=rfp_id,
+            raw_text=raw_text,
+            use_web_search=use_web_search,
+            progress=None
+        )
+    except Exception:
+        traceback.print_exc()
+        raise
 
     return {
         "success": True,
@@ -192,7 +196,7 @@ def regenerate_pipeline(
             rfp_id=rfp.id,
             raw_text=rfp.raw_text,
             use_web_search=rfp.use_web_search,
-            progress=None,
+            progress=None
         )
 
         crud.log_action(

@@ -1,0 +1,47 @@
+Client / Organisation: Greenfield University
+RFP Reference Number: RFP-2026-EDU-412
+Solution Domain: Learning Management System
+Region: Asia-Pacific
+Submission Deadline: 25 Jul 2026
+
+Background: University seeks a modern LMS to support blended learning and analytics.
+
+Functional Requirements:
+
+    SCORM-compliant LMS
+
+    Mobile-first interface
+
+    Integration with grading system
+
+    Analytics dashboard
+
+Non-Functional Requirements:
+
+    SLA 99.9% uptime
+
+    Support for 50,000 concurrent users
+
+Compliance & Security Requirements:
+
+    GDPR compliance
+
+    TLS 1.3 encryption
+
+Commercials:
+
+    LMS license (per student per year)
+
+    Implementation services (labor, 400 hours)
+
+    Support (per month)
+
+Evaluation Criteria:
+
+    Technical approach 40%
+
+    Compliance 25%
+
+    Commercials 20%
+
+    Experience 15%

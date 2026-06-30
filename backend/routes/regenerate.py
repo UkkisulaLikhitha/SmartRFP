@@ -1,15 +1,13 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 
 from backend.services import regenerate_pipeline
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/regenerate",
+    tags=["Pipeline"]
+)
 
 
-class RegenerateRequest(BaseModel):
-    rfp_id: int
-
-
-@router.post("/regenerate")
-async def regenerate(request: RegenerateRequest):
-    return regenerate_pipeline(request.rfp_id)
+@router.post("/{rfp_id}")
+def regenerate(rfp_id: int):
+    return regenerate_pipeline(rfp_id)

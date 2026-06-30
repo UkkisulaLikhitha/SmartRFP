@@ -1,0 +1,49 @@
+Client / Organisation: Global Retail Group
+RFP Reference Number: RFP-2026-CYBER-201
+Solution Domain: Cybersecurity & SOC Services
+Region: North America
+Submission Deadline: 15 Jul 2026
+
+Background: Global Retail Group seeks a partner to provide 24/7 threat detection, incident response, and compliance monitoring across its e-commerce platforms.
+
+Functional Requirements:
+
+    Deploy SIEM solution integrated with existing infrastructure
+
+    Provide 24/7 SOC monitoring
+
+    Incident response SLA under 15 minutes
+
+    Quarterly penetration testing
+
+Non-Functional Requirements:
+
+    99.99% monitoring uptime
+
+    Scalability to handle 5x traffic spikes during sales events
+
+Compliance & Security Requirements:
+
+    SOC 2 Type II, PCI DSS, GDPR compliance
+
+    Encryption TLS 1.3
+
+Commercials:
+
+    SIEM license (per month)
+
+    SOC monitoring (per month)
+
+    Incident response services (per incident)
+
+Evaluation Criteria:
+
+    Technical approach 40%
+
+    Compliance 30%
+
+    Commercials 20%
+
+    Experience 10%
+
+Submission Instructions: PDF/DOCX, itemised pricing, valid 90 days.

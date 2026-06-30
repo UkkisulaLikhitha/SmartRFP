@@ -1,0 +1,13 @@
+Client: TelNet Global
+Ref: RFP-2026-TEL-804
+Domain: 5G Infrastructure
+Region: North America
+Deadline: 20 Aug 2026
+
+Background: 5G rollout.
+
+Functional: Towers, latency benchmarks.
+Non-Functional: SLA 99.99%.
+Compliance: FCC.
+Commercials: Infrastructure, deployment, support.
+Evaluation: Technical 40%, Compliance 30%, Commercials 20%, Experience 10%.

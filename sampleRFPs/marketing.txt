@@ -1,0 +1,13 @@
+Client: BrightWave Media
+Ref: RFP-2026-MKT-602
+Domain: Digital Campaign Strategy
+Region: Global
+Deadline: 5 Aug 2026
+
+Background: Brand seeks online growth.
+
+Functional: SEO, PPC, social media campaigns.
+Non-Functional: Monthly reporting, ROI tracking.
+Compliance: GDPR for data.
+Commercials: Campaign management, ad spend, reporting.
+Evaluation: Technical 40%, Commercials 30%, Experience 30%.

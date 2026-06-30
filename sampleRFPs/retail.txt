@@ -1,0 +1,13 @@
+Client: ShopEase
+Ref: RFP-2026-RET-905
+Domain: POS & Inventory
+Region: North America
+Deadline: 25 Aug 2026
+
+Background: Omnichannel POS system.
+
+Functional: POS, inventory, CRM integration.
+Non-Functional: SLA 99.9%.
+Compliance: PCI DSS.
+Commercials: POS license, integration, support.
+Evaluation: Technical 40%, Compliance 25%, Commercials 20%, Experience 15%.

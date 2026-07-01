@@ -60,7 +60,7 @@ cd monitoring\prometheus
 Streamlit App: http://localhost:8501
 FastAPI Swagger Dashboard: http://127.0.0.1:8000/docs
 Prometheus Metrics: http://localhost:8000/metrics
-Grama Dashboard: http://localhost:9090/
+Grafana Dashboard: http://localhost:9090/
 
 > **No Groq key?** The app still runs in **demo mode** — it produces deterministic,
 > source-grounded drafts so you can see the full flow. Add a key any time for real

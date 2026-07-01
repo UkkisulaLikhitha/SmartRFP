@@ -2,32 +2,47 @@
 import pandas as pd
 
 import database as db
-from ui.ui_utils import (topbar,card, current_rfp, metric)
+from ui.ui_utils import topbar, card, current_rfp, metric
+
 
 # =========================================================================== #
 #  PAGE: AI Evaluation
 # =========================================================================== #
 def page_llm_eval():
-    topbar("AI Evaluation", "Check performance of LLM calls.", show_rfp=True)
-    rfp = current_rfp()
-    evaluation = db.get_evaluation_metrics(rfp["id"]) if rfp else None
+    topbar(
+        "AI Evaluation",
+        "Check performance of LLM calls.",
+        show_rfp=True,
+    )
 
-    if evaluation:
-        overall_score = (
-            evaluation["proposal_completeness"]
-            + evaluation["average_confidence"]
-            + evaluation["context_coverage"]
-            + evaluation["pricing_freshness"]
-        ) / 4
-    left, middle, right = st.columns([1,2,1])
+    rfp = current_rfp()
+    if not rfp:
+        st.info("No RFP selected.")
+        return
+
+    evaluation = db.get_evaluation_metrics(rfp["id"])
+    if not evaluation:
+        st.info("No evaluation metrics available.")
+        return
+
+    overall_score = (
+        evaluation["proposal_completeness"]
+        + evaluation["average_confidence"]
+        + evaluation["context_coverage"]
+        + evaluation["pricing_freshness"]
+    ) / 4
+
+    left, _, _ = st.columns([1, 2, 1])
 
     with left:
-
         st.metric(
             "Overall AI Quality Score",
-            f"{overall_score*100:.1f}%"
+            f"{overall_score * 100:.1f}%",
         )
 
+    # ----------------------------------------------------------------------- #
+    # Core Metrics
+    # ----------------------------------------------------------------------- #
     cols = st.columns(4)
 
     metric(
@@ -35,8 +50,8 @@ def page_llm_eval():
         "ic-green",
         "✅",
         "Completeness",
-        f"{evaluation['proposal_completeness']*100:.0f}%",
-        "Proposal"
+        f"{evaluation['proposal_completeness'] * 100:.0f}%",
+        "Proposal",
     )
 
     metric(
@@ -44,8 +59,8 @@ def page_llm_eval():
         "ic-blue",
         "📚",
         "Context",
-        f"{evaluation['context_coverage']*100:.0f}%",
-        "Grounded"
+        f"{evaluation['context_coverage'] * 100:.0f}%",
+        "Grounded",
     )
 
     metric(
@@ -54,7 +69,7 @@ def page_llm_eval():
         "🎯",
         "Confidence",
         f"{evaluation['average_confidence']:.2f}",
-        "LLM"
+        "LLM",
     )
 
     metric(
@@ -63,8 +78,9 @@ def page_llm_eval():
         "⚠️",
         "Flags",
         str(evaluation["hallucination_flags"]),
-        "Review"
+        "Review",
     )
+    st.divider()
 
     with card("AI Quality Indicators"):
         st.write("Proposal Completeness")
@@ -81,6 +97,9 @@ def page_llm_eval():
 
     st.divider()
 
+    # ----------------------------------------------------------------------- #
+    # Advanced RAG Metrics
+    # ----------------------------------------------------------------------- #
     st.subheader("🧠 Advanced RAG Evaluation")
 
     cols = st.columns(4)
@@ -90,8 +109,8 @@ def page_llm_eval():
         "ic-blue",
         "📖",
         "Faithfulness",
-        f"{evaluation['faithfulness']*100:.1f}%",
-        "Grounded"
+        f"{evaluation['faithfulness'] * 100:.1f}%",
+        "Grounded",
     )
 
     metric(
@@ -99,8 +118,8 @@ def page_llm_eval():
         "ic-green",
         "🎯",
         "Answer Relevancy",
-        f"{evaluation['answer_relevancy']*100:.1f}%",
-        "Relevant"
+        f"{evaluation['answer_relevancy'] * 100:.1f}%",
+        "Relevant",
     )
 
     metric(
@@ -108,8 +127,8 @@ def page_llm_eval():
         "ic-purple",
         "📚",
         "Context Precision",
-        f"{evaluation['context_precision']*100:.1f}%",
-        "Retrieved"
+        f"{evaluation['context_precision'] * 100:.1f}%",
+        "Retrieved",
     )
 
     metric(
@@ -117,8 +136,8 @@ def page_llm_eval():
         "ic-amber",
         "🔍",
         "Context Recall",
-        f"{evaluation['context_recall']*100:.1f}%",
-        "Coverage"
+        f"{evaluation['context_recall'] * 100:.1f}%",
+        "Coverage",
     )
 
     cols = st.columns(3)
@@ -129,7 +148,7 @@ def page_llm_eval():
         "🏆",
         "MRR@K",
         f"{evaluation['mrr']:.2f}",
-        "Ranking"
+        "Ranking",
     )
 
     metric(
@@ -137,8 +156,8 @@ def page_llm_eval():
         "ic-green",
         "🎯",
         "Hit Rate@K",
-        f"{evaluation['hit_rate']*100:.0f}%",
-        "Success"
+        f"{evaluation['hit_rate'] * 100:.0f}%",
+        "Success",
     )
 
     metric(
@@ -146,12 +165,13 @@ def page_llm_eval():
         "ic-red",
         "🧩",
         "Chunk Overlap",
-        f"{evaluation['chunk_overlap']*100:.1f}%",
-        "Lower is Better"
+        f"{evaluation['chunk_overlap'] * 100:.1f}%",
+        "Lower is Better",
     )
 
-    with card("Advanced Evaluation Indicators"):
+    st.divider()
 
+    with card("Advanced Evaluation Indicators"):
         st.write("Faithfulness")
         st.progress(evaluation["faithfulness"])
 
@@ -163,31 +183,35 @@ def page_llm_eval():
 
         st.write("Context Recall")
         st.progress(evaluation["context_recall"])
-    
-    stats = pd.DataFrame({
-    "Metric":[
-        "Pipeline Runtime",
-        "LLM Calls",
-        "Knowledge Base Documents",
-        "Pricing Items",
-        "MRR@K",
-        "Hit Rate@K",
-        "Chunk Overlap"
-    ],
 
-    "Value":[
-        f"{evaluation['runtime_seconds']} sec",
-        evaluation["llm_calls"],
-        evaluation["knowledge_documents"],
-        evaluation["pricing_items"],
-        f"{evaluation['mrr']:.2f}",
-        f"{evaluation['hit_rate']:.2f}",
-        f"{evaluation['chunk_overlap']:.2f}",
-    ]
-    })
+    # ----------------------------------------------------------------------- #
+    # Runtime Statistics
+    # ----------------------------------------------------------------------- #
+    stats = pd.DataFrame(
+        {
+            "Metric": [
+                "Pipeline Runtime",
+                "LLM Calls",
+                "Knowledge Base Documents",
+                "Pricing Items",
+                "MRR@K",
+                "Hit Rate@K",
+                "Chunk Overlap",
+            ],
+            "Value": [
+                f"{evaluation['runtime_seconds']} sec",
+                evaluation["llm_calls"],
+                evaluation["knowledge_documents"],
+                evaluation["pricing_items"],
+                f"{evaluation['mrr']:.2f}",
+                f"{evaluation['hit_rate']:.2f}",
+                f"{evaluation['chunk_overlap']:.2f}",
+            ],
+        }
+    )
 
     st.dataframe(
         stats,
         use_container_width=True,
-        hide_index=True
+        hide_index=True,
     )

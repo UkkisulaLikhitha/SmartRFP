@@ -53,10 +53,18 @@ st.markdown("""
 <style>
 :root{
   --blue:#2563eb; --blue2:#3b82f6; --blue-d:#1d4ed8; --blue-l:#eaf1ff;
-  --ink:#000000; --ink2:#111111; --muted:#333333; --line:#e8edf3; --bg:#f3fefe;
+  --ink:#000000; --ink2:#111111; --muted:#333333; --line:#e8edf3;
   --green:#16a34a; --green-l:#e7f7ee; --amber:#d97706; --amber-l:#fff5e6;
   --purple:#7c3aed; --purple-l:#f1ecfe; --teal:#0d9488; --teal-l:#e3f7f4;
   --red:#dc2626; --red-l:#fdeced;
+  --bg: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f8feff 20%,
+    #f3fefe 50%,
+    #e9fcfd 75%,
+    #ddfbfd 100%
+);
 }
 /* Body text → Arial; headings → Calibri */
 html, body, .stApp, [class^="st-"], [class*=" st-"], .stMarkdown,

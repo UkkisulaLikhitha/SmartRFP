@@ -82,21 +82,6 @@ def page_llm_eval():
     )
     st.divider()
 
-    with card("AI Quality Indicators"):
-        st.write("Proposal Completeness")
-        st.progress(evaluation["proposal_completeness"])
-
-        st.write("Average Confidence")
-        st.progress(evaluation["average_confidence"])
-
-        st.write("Context Coverage")
-        st.progress(evaluation["context_coverage"])
-
-        st.write("Pricing Freshness")
-        st.progress(evaluation["pricing_freshness"])
-
-    st.divider()
-
     # ----------------------------------------------------------------------- #
     # Advanced RAG Metrics
     # ----------------------------------------------------------------------- #
@@ -170,20 +155,6 @@ def page_llm_eval():
     )
 
     st.divider()
-
-    with card("Advanced Evaluation Indicators"):
-        st.write("Faithfulness")
-        st.progress(evaluation["faithfulness"])
-
-        st.write("Answer Relevancy")
-        st.progress(evaluation["answer_relevancy"])
-
-        st.write("Context Precision")
-        st.progress(evaluation["context_precision"])
-
-        st.write("Context Recall")
-        st.progress(evaluation["context_recall"])
-
     # ----------------------------------------------------------------------- #
     # Runtime Statistics
     # ----------------------------------------------------------------------- #
@@ -194,18 +165,12 @@ def page_llm_eval():
                 "LLM Calls",
                 "Knowledge Base Documents",
                 "Pricing Items",
-                "MRR@K",
-                "Hit Rate@K",
-                "Chunk Overlap",
             ],
             "Value": [
                 f"{evaluation['runtime_seconds']} sec",
                 evaluation["llm_calls"],
                 evaluation["knowledge_documents"],
                 evaluation["pricing_items"],
-                f"{evaluation['mrr']:.2f}",
-                f"{evaluation['hit_rate']:.2f}",
-                f"{evaluation['chunk_overlap']:.2f}",
             ],
         }
     )

@@ -127,19 +127,18 @@ def _sec(
     title,
     content,
     source,
-    flag=(None,None,"high"),
+    flag=(None, None, "high"),
     retrieved_docs=None,
     prompt_context="",
-    requirement=None,
+    requirement="",
 ):
     return {
         "section_title": title,
         "content": content,
         "source": source,
-
         "retrieved_docs": retrieved_docs or [],
-        "prompt_context": prompt_context,
-        "requirement": requirement,
+        "prompt_context": prompt_context or "",
+        "requirement": requirement or "",
 
         "flag_type": flag[0],
         "flag_note": flag[1],
@@ -211,15 +210,24 @@ def generate_draft(requirements, rag_agent, pricing_lines, web_insight=None,
     sections.append(_sec("Implementation Plan", plan, "Standard delivery methodology"))
 
     # ---- Security (LLM, grounded, compliance-flagged) --------------------- #
-    sec_ctx = rag_agent.retrieve("security compliance data protection certification")
+    security_query = "security compliance data protection certification"
+    sec_ctx = rag_agent.retrieve(security_query)
     security = _ask(P_SECURITY, _ctx(sec_ctx), max_tokens=420)
     sflag = _flag(security, bool(sec_ctx))
     if sflag[0] is None:
         sflag = ("compliance", "Security content should be confirmed by an SME for this client.",
                  "medium")
-    sections.append(_sec("Security", security,
-                         ", ".join(d["title"] for d in sec_ctx) if sec_ctx else "Synthesised",
-                         sflag))
+    sections.append(
+        _sec(
+            "Security",
+            security,
+            ", ".join(d["title"] for d in sec_ctx) if sec_ctx else "Synthesised",
+            sflag,
+            retrieved_docs=sec_ctx,
+            prompt_context=_ctx(sec_ctx),
+            requirement=security_query,
+        )
+    )
 
     # ---- Deliverables (deterministic) ------------------------------------- #
     sections.append(_sec("Deliverables",
@@ -268,3 +276,20 @@ def generate_draft(requirements, rag_agent, pricing_lines, web_insight=None,
                          "Synthesised", (None, None, "medium")))
 
     return sections
+
+def _rag_section(title, prompt, query, rag_agent, system_prompt, flag_fn=None):
+    ctx = rag_agent.retrieve(query)
+
+    answer = _ask(system_prompt, _ctx(ctx), max_tokens=420)
+
+    flag = flag_fn(answer, bool(ctx)) if flag_fn else (None, None, "medium")
+
+    return _sec(
+        title,
+        answer,
+        ", ".join(d["title"] for d in ctx) if ctx else "Synthesised",
+        flag,
+        retrieved_docs=ctx,
+        requirement=query,
+        prompt_context=_ctx(ctx)
+    )

@@ -21,7 +21,7 @@ Built with **Streamlit + Groq + SQLite** (instead of OpenAI + PostgreSQL).
 
 ---
 
-## 2. How to run (5 steps)
+## 2. How to run (7 steps)
 
 > ⚠️ **Keep the folder structure intact.** Always unzip the provided `smartrfp.zip`
 > and run from the unzipped `smartrfp/` folder. Do **not** copy the `.py` files out
@@ -45,21 +45,26 @@ pip install -r requirements.txt
 cp .env.example .env          # Windows: copy .env.example .env
 #   then open .env and paste your key into GROQ_API_KEY=...
 
-# 5. Launch the app
+# 5. Launch the FastAPI server
+uvicorn backend.main:app --reload
+
+#6. Launch the app
 streamlit run app.py
+
+#7. Launch Prometheus Scraping:
+(Download Prometheus ZIP, copy the files OTHER THAN the .yml into this following folder)
+cd monitoring\prometheus
+.\prometheus.exe --config.file=prometheus.yml
 ```
 
-Then open the URL it prints (usually http://localhost:8501).
-Prometheus Metrics available at: http://localhost:8000/metrics
+Streamlit App: http://localhost:8501
+FastAPI Swagger Dashboard: http://127.0.0.1:8000/docs
+Prometheus Metrics: http://localhost:8000/metrics
+Grama Dashboard: http://localhost:9090/
 
 > **No Groq key?** The app still runs in **demo mode** — it produces deterministic,
 > source-grounded drafts so you can see the full flow. Add a key any time for real
 > LLM-written drafts; nothing else changes.
-
-### Get a free Groq key
-1. Go to https://console.groq.com/keys
-2. Create a key (starts with `gsk_...`)
-3. Paste it into `.env` as `GROQ_API_KEY=gsk_...`
 
 > Groq rotates models. The default is `openai/gpt-oss-20b`. If you get a
 > "model not found" error, open `.env`, set `GROQ_MODEL` to a current model from
@@ -81,27 +86,91 @@ flags / pricing, and writes `exports/acme_test.{txt,docx,pdf}`.
 ## 4. Project structure
 
 ```
-smartrfp/
-├── app.py                 # Streamlit UI (Upload, Dashboard, Resource Cost, Human Review, Export, Settings, Help & Docs)
-├── pipeline.py            # Orchestrator: parse -> [RAG || Pricing] -> synthesize
-├── llm.py                 # Groq wrapper + demo-mode fallback
-├── config.py              # Settings (reads .env)
-├── database.py            # SQLite schema + all CRUD
-├── seed_data.py          # seeds the knowledge base
-├── demo_seed.py          # seeds sample RFPs so the dashboard looks populated
-├── test_pipeline.py       # End-to-end backend test
-├── evaluation.py          # stores all evaluatiuon metrics
-├── metrics.py          # computes application run metrics
-├── requirements.txt
-├── .env.example
+SmartRFP/
+├── app.py                  # Main Streamlit application and UI entry point
+├── pipeline.py             # Orchestrates the end-to-end AI workflow
+├── llm.py                  # Wrapper for Groq/OpenAI LLM calls
+├── database.py             # SQLite repository used by the Streamlit application
+├── config.py               # Root configuration shared by the application
+├── evaluation.py           # Computes proposal quality and RAG evaluation metrics
+├── metrics.py              # Prometheus/LangSmith runtime metrics and counters
+├── requirements.txt        # Python package dependencies
+├── state.py                # Streamlit session state management
+├── guardrails.py           # Input/output validation and AI safety guardrails
+│
 ├── agents/
-│   ├── extractor.py       # F1  — RFP parser / requirement extractor
-│   ├── rag_agent.py       # Agent 1 — RAG retrieval (TF-IDF cosine similarity)
-│   ├── pricing_agent.py   # Agent 2 — live pricing / web intelligence (mock + Tavily hook)
-│   └── draft_generator.py # F4  — synthesis + flagging
-└── utils/
-    ├── file_handler.py    # Extract & clean text from PDF/DOCX/TXT
-    └── exporter.py        # DOCX / PDF / TXT export
+│   ├── extractor.py        # Extracts requirements from uploaded RFP
+│   ├── rag_agent.py        # Retrieves relevant past knowledge/content
+│   ├── pricing_agent.py    # Generates pricing/cost information
+│   └── draft_generator.py  # Produces proposal draft using LLM
+│
+├── ui/
+│   ├── api.py              # HTTP client for communicating with the FastAPI backend
+│   ├── dashboard.py        # Dashboard displaying RFPs, metrics and project status
+│   ├── export.py           # UI for exporting generated proposals
+│   ├── help_pg.py          # Help and user documentation page
+│   ├── llm_eval.py         # Displays LLM and RAG evaluation metrics
+│   ├── resource_cost.py    # Displays pricing and resource cost estimates
+│   ├── review.py           # Human review, approval and regeneration interface
+│   ├── settings.py         # Application configuration and environment settings page
+│   ├── upload.py           # RFP upload page and analysis workflow
+│   └── ui_utils.py         # Shared UI components, styling and helper functions
+│
+├── backend/
+│   ├── config.py           # FastAPI configuration and environment settings
+│   ├── crud.py             # SQLAlchemy CRUD operations for database access
+│   ├── database.py         # SQLAlchemy engine, sessions and database connection
+│   ├── main.py             # FastAPI application entry point and route registration
+│   ├── models.py           # SQLAlchemy ORM models representing database tables
+│   ├── schemas.py          # Pydantic request and response schemas
+│   ├── services.py         # Business logic connecting API endpoints to the pipeline
+│   ├── __init__.py         # Marks backend as a Python package
+│   └── routes/
+│       ├── dashboard.py    # Dashboard-related API endpoints
+│       ├── export.py       # Proposal export API endpoints
+│       ├── health.py       # Health check endpoint for service monitoring
+│       ├── pricing.py      # Pricing retrieval API endpoints
+│       ├── regenerate.py   # Endpoint to rerun the proposal generation pipeline
+│       ├── review.py       # Human review and approval API endpoints
+│       ├── upload.py       # RFP upload and analysis API endpoint
+│       └── __init__.py     # Marks routes as a Python package
+│── monitoring/
+│   └── prometheus/
+│       └── prometheus.yml  # Attches Prometheus to the project
+├── utils/
+│   ├── exporter.py         # PDF/DOCX export
+│   └── file_handler.py     # File upload/parsing
+│
+├── exports/                # Generated PDF and DOCX proposal outputs
+│
+├── smartrfp.db             # SQLite database
+│
+├── tests/                  # Automated test suite
+├── conftest.py             # Shared pytest fixtures and test configuration
+│
+├── unit/
+│   ├── test_file_handler.py    # Unit tests for document parsing utilities
+│   ├── test_database.py        # Unit tests for database operations
+│   ├── test_extractor.py       # Unit tests for requirement extraction
+│   ├── test_rag.py             # Unit tests for RAG retrieval
+│   ├── test_pricing.py         # Unit tests for pricing agent
+│   ├── test_draft.py           # Unit tests for proposal draft generation
+│   ├── test_llm.py             # Unit tests for LLM wrapper
+│   └── test_exporter.py        # Unit tests for export functionality
+│
+├── integration/
+│   ├── test_pipeline.py            # Integration tests for the complete pipeline
+│   ├── test_rag_database.py        # Tests interaction between RAG and database
+│   ├── test_pipeline_database.py   # Tests pipeline persistence to the database
+│   ├── test_draft_rag.py           # Tests draft generation using RAG context
+│   └── test_export_pipeline.py     # Tests exporting generated proposals
+│
+└── e2e/
+    ├── test_demo_pipeline.py   # End-to-end demo workflow test
+    ├── test_real_pipeline.py   # End-to-end workflow using real documents
+    └── test_ragas.py           # End-to-end evaluation using RAGAS metrics
+
+pip install git+https://github.com/explodinggradients/ragas.git
 ```
 
 The SQLite file `smartrfp.db` is created automatically on first launch.
@@ -134,7 +203,7 @@ with no model downloads. To upgrade to true semantic embeddings, swap
 
 ---
 
-## 6. Safety behaviours from the PRD (already implemented)
+## 6. Safety behaviours from the PRD
 - **Hallucination flag** — a draft claim (e.g. an SLA %) not found in any source is flagged.
 - **Compliance flag** — compliance/data-residency content is flagged for SME confirmation.
 - **Missing-info marker** — a requirement with no internal match is flagged, not faked.

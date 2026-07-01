@@ -1,0 +1,44 @@
+services:
+  backend:
+    image: smartrfp-backend
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+
+    container_name: smartrfp-api
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    restart: always
+
+  frontend:
+    image: smartrfp-frontend  
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+
+    container_name: smartrfp-ui
+
+    ports:
+      - "8501:8501"
+
+    env_file:
+      - .env
+
+    depends_on:
+      - backend
+
+    restart: always
+
+  prometheus:
+    image: prom/prometheus
+
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+    ports:
+      - "9090:9090"

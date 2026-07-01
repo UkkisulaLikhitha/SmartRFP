@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import make_asgi_app
 from starlette.middleware.wsgi import WSGIMiddleware
@@ -13,11 +14,22 @@ from backend.routes import (
     health,
 )
 
+
+from backend.database import Base, engine
+import backend.models
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
     title="SmartRFP API",
     version="1.0",
 )
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

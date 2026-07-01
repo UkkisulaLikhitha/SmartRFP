@@ -1,7 +1,11 @@
 from statistics import mean
+
 import llm
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
+from ragas_eval import run_ragas_eval
 
 CONFIDENCE_MAP = {
     "high": 1.0,
@@ -23,6 +27,31 @@ EXPECTED_SECTIONS = {
 }
 
 
+def similarity(a, b):
+    """
+    Safe cosine similarity using TF-IDF.
+    """
+
+    if not a or not b:
+        return 0.0
+
+    a = str(a).strip()
+    b = str(b).strip()
+
+    if not a or not b:
+        return 0.0
+
+    try:
+        vect = TfidfVectorizer(stop_words="english")
+
+        X = vect.fit_transform([a, b])
+
+        return float(cosine_similarity(X[0], X[1])[0][0])
+
+    except Exception:
+        return 0.0
+
+
 def evaluate_pipeline(
     requirements,
     sections,
@@ -30,20 +59,23 @@ def evaluate_pipeline(
     runtime_seconds,
     rag_agent=None,
 ):
-    """
-    Compute deterministic evaluation metrics.
-    """
 
-    # ---------------- Completeness ----------------
-    generated = {s["section_title"] for s in sections}
+    # ----------------------------------------------------
+    # Proposal Completeness
+    # ----------------------------------------------------
+
+    generated = {
+        s["section_title"]
+        for s in sections
+    }
 
     proposal_completeness = round(
-        len(generated & EXPECTED_SECTIONS) /
-        len(EXPECTED_SECTIONS),
-        2,
-    )
+        len(generated & EXPECTED_SECTIONS) / len(EXPECTED_SECTIONS), 2)
 
-    # ---------------- Confidence ----------------
+    # ----------------------------------------------------
+    # Confidence
+    # ----------------------------------------------------
+
     confidence_scores = [
         CONFIDENCE_MAP.get(
             s.get("confidence", "").lower(),
@@ -57,213 +89,123 @@ def evaluate_pipeline(
         2,
     ) if confidence_scores else 0
 
-    # ---------------- Flags ----------------
+    # ----------------------------------------------------
+    # Flags
+    # ----------------------------------------------------
+
     hallucination_flags = sum(
-        1
+        bool(s.get("flag_type"))
         for s in sections
-        if s.get("flag_type")
     )
 
-    # ---------------- Context Coverage ----------------
-    grounded = sum(
-        1
+    # ----------------------------------------------------
+    # Context Coverage
+    # ----------------------------------------------------
+
+    rag_sections = [
+        s
         for s in sections
-        if s.get("source")
-        and s["source"] != "Synthesised"
-    )
+        if s.get("retrieved_docs")
+    ]
 
     context_coverage = round(
-        grounded / len(sections),
+        len(rag_sections) / len(sections),
         2,
     ) if sections else 0
 
-    # ---------------- Pricing ----------------
+    # ----------------------------------------------------
+    # Pricing
+    # ----------------------------------------------------
+
     if pricing_lines:
+
         fresh = sum(
-            1
+            not p["stale"]
             for p in pricing_lines
-            if not p["stale"]
         )
 
         pricing_freshness = round(
             fresh / len(pricing_lines),
             2,
         )
+
     else:
+
         pricing_freshness = 0
 
-    # ---------------- Additional Metrics ----------------
+    # ----------------------------------------------------
+    # Metadata
+    # ----------------------------------------------------
+
     kb_documents = len(rag_agent.docs) if rag_agent else 0
 
     pricing_items = len(pricing_lines)
 
     llm_demo_mode = llm.used_demo()
 
-    llm_calls = 5          # Executive, Overview, Technical, Security, Conclusion
+    llm_calls = 5
 
-    def similarity(a, b):
-        if not a or not b:
-            return 0
-
-        vect = TfidfVectorizer(stop_words="english")
-
-        X = vect.fit_transform([a, b])
-
-        return float(cosine_similarity(X[0], X[1])[0][0])
-
-    faithfulness_scores = []
-
-    for sec in sections:
-
-        docs = sec.get("retrieved_docs", [])
-
-        if not docs:
-            continue
-
-        context = " ".join(d["content"] for d in docs)
-
-        faithfulness_scores.append(
-
-            similarity(
-                sec["content"],
-                context,
-            )
-
-        )
-
-    faithfulness = round(
-        mean(faithfulness_scores),
-        2,
-    ) if faithfulness_scores else 0
-
-    answer_scores = []
-
-    for sec in sections:
-
-        req = sec.get("requirement")
-
-        if not req:
-            continue
-
-        answer_scores.append(
-
-            similarity(
-                req,
-                sec["content"],
-            )
-
-        )
-
-    answer_relevancy = round(
-        mean(answer_scores),
-        2,
-    ) if answer_scores else 0
-
-    precision_scores = []
-
-    for sec in sections:
-
-        docs = sec.get("retrieved_docs", [])
-
-        if not docs:
-            continue
-
-        useful = 0
-
-        for d in docs:
-
-            if similarity(
-                sec["content"],
-                d["content"],
-            ) > 0.30:
-
-                useful += 1
-
-        precision_scores.append(
-            useful / len(docs)
-        )
-
-    context_precision = round(
-        mean(precision_scores),
-        2,
-    ) if precision_scores else 0
-
-    recall_scores = []
-
-    for sec in sections:
-
-        req = sec.get("requirement")
-
-        docs = sec.get("retrieved_docs", [])
-
-        if not docs:
-            continue
-
-        covered = 0
-
-        for d in docs:
-
-            if similarity(
-                req,
-                d["content"],
-            ) > 0.30:
-
-                covered += 1
-
-        recall_scores.append(
-            covered / len(docs)
-        )
-
-    context_recall = round(
-        mean(recall_scores),
-        2,
-    ) if recall_scores else 0
+    # ----------------------------------------------------
+    # Hit Rate
+    # ----------------------------------------------------
 
     hits = []
 
-    for sec in sections:
+    for sec in rag_sections:
 
         docs = sec.get("retrieved_docs", [])
 
         hits.append(
-
-            int(
-                any(d["score"] > 0.30 for d in docs)
-            )
-
+            int(len(docs) > 0)
         )
 
     hit_rate = round(
         mean(hits),
         2,
-    )
+    ) if hits else 0
+
+    # ----------------------------------------------------
+    # MRR
+    # ----------------------------------------------------
 
     mrr_scores = []
 
-    for sec in sections:
+    for sec in rag_sections:
 
         docs = sec.get("retrieved_docs", [])
 
-        rr = 0
+        req = sec.get("requirement")
 
-        for rank, doc in enumerate(docs, 1):
+        if not docs or not req:
+            continue
 
-            if doc["score"] > 0.30:
+        reciprocal_rank = 0
 
-                rr = 1 / rank
+        for rank, doc in enumerate(docs, start=1):
 
+            score = similarity(
+                req,
+                doc.get("content", "")
+            )
+
+            if score >= 0.20:
+                reciprocal_rank = 1 / rank
                 break
 
-        mrr_scores.append(rr)
+        mrr_scores.append(reciprocal_rank)
 
     mrr = round(
         mean(mrr_scores),
         2,
-    )
+    ) if mrr_scores else 0
 
-    overlap = []
+    # ----------------------------------------------------
+    # Chunk Overlap
+    # ----------------------------------------------------
 
-    for sec in sections:
+    overlap_scores = []
+
+    for sec in rag_sections:
 
         docs = sec.get("retrieved_docs", [])
 
@@ -271,38 +213,129 @@ def evaluate_pipeline(
 
             for j in range(i + 1, len(docs)):
 
-                overlap.append(
+                overlap_scores.append(
 
                     similarity(
-                        docs[i]["content"],
-                        docs[j]["content"],
+                        docs[i].get("content", ""),
+                        docs[j].get("content", ""),
                     )
 
                 )
 
     chunk_overlap = round(
-        mean(overlap),
+        mean(overlap_scores),
         2,
-    ) if overlap else 0
+    ) if overlap_scores else 0
+
+    # ----------------------------------------------------
+    # Build RAGAS Dataset
+    # ----------------------------------------------------
+
+    ragas_dataset = []
+
+    if rag_agent:
+
+        for sec in rag_sections:
+
+            requirement = sec.get("requirement")
+
+            docs = sec.get("retrieved_docs", [])
+
+            if not requirement:
+                continue
+
+            contexts = [
+                d.get("content", "")
+                for d in docs
+                if d.get("content")
+            ]
+
+            if not contexts:
+                continue
+
+            ground_truth = rag_agent.get_ground_truth(requirement)
+
+            if not ground_truth:
+                continue
+
+            ragas_dataset.append(
+                {
+                    "question": requirement,
+                    "answer": sec.get("content", ""),
+                    "contexts": contexts,
+                    "ground_truth": ground_truth,
+                }
+            )
+
+    # ----------------------------------------------------
+    # Run RAGAS
+    # ----------------------------------------------------
+
+    if ragas_dataset:
+
+        ragas_results = run_ragas_eval(
+            ragas_dataset
+        )
+
+    else:
+
+        ragas_results = {
+            "faithfulness": 0,
+            "answer_relevancy": 0,
+            "context_precision": 0,
+            "context_recall": 0,
+        }
+
+    # ----------------------------------------------------
+    # Return
+    # ----------------------------------------------------
 
     return {
+
         "requirements": len(requirements),
+
         "sections_generated": len(sections),
+
         "proposal_completeness": proposal_completeness,
+
         "average_confidence": average_confidence,
+
         "context_coverage": context_coverage,
+
         "hallucination_flags": hallucination_flags,
+
         "pricing_freshness": pricing_freshness,
+
         "runtime_seconds": round(runtime_seconds, 2),
+
         "knowledge_documents": kb_documents,
+
         "pricing_items": pricing_items,
+
         "llm_calls": llm_calls,
+
         "demo_mode": llm_demo_mode,
-        "faithfulness": faithfulness,
-        "answer_relevancy": answer_relevancy,
-        "context_precision": context_precision,
-        "context_recall": context_recall,
+
         "mrr": mrr,
+
         "hit_rate": hit_rate,
+
         "chunk_overlap": chunk_overlap,
+
+        "faithfulness": ragas_results.get("faithfulness", 0),
+
+        "answer_relevancy": ragas_results.get(
+            "answer_relevancy",
+            0,
+        ),
+
+        "context_precision": ragas_results.get(
+            "context_precision",
+            0,
+        ),
+
+        "context_recall": ragas_results.get(
+            "context_recall",
+            0,
+        ),
     }

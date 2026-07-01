@@ -43,6 +43,11 @@ class RAGAgent:
             self.vectorizer = TfidfVectorizer(stop_words="english")
             self.matrix = self.vectorizer.fit_transform(self.corpus)
     
+
+    def get_ground_truth(self, query):
+        docs = self.retrieve(query, top_k=1)
+        return docs[0]["content"] if docs else None
+
     @traceable(
         name="RAG Retrieval",
         run_type="retriever",

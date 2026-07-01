@@ -169,8 +169,6 @@ SmartRFP/
     ├── test_demo_pipeline.py   # End-to-end demo workflow test
     ├── test_real_pipeline.py   # End-to-end workflow using real documents
     └── test_ragas.py           # End-to-end evaluation using RAGAS metrics
-
-pip install git+https://github.com/explodinggradients/ragas.git
 ```
 
 The SQLite file `smartrfp.db` is created automatically on first launch.

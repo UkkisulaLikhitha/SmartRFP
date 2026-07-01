@@ -6,6 +6,7 @@ Deadline: 25 Aug 2026
 
 Background: Omnichannel POS system.
 
+Requirements:
 Functional: POS, inventory, CRM integration.
 Non-Functional: SLA 99.9%.
 Compliance: PCI DSS.

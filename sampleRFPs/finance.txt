@@ -6,6 +6,7 @@ Deadline: 12 Aug 2026
 
 Background: Fraud detection system.
 
+Requirements:
 Functional: AI-driven fraud detection, compliance.
 Non-Functional: SLA 99.95%.
 Compliance: PCI DSS.

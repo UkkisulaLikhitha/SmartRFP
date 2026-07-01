@@ -3,7 +3,7 @@ import pandas as pd
 
 import database as db
 from ui.export import current_rfp
-from ui.ui_utils import (topbar,card, current_rfp, metric)
+from ui.ui_utils import (topbar,card, current_rfp, metric, go)
 import state
 
 # =========================================================================== #
@@ -17,6 +17,13 @@ ROLE_SPLIT = [("Project Management", 0.1466, 0.1208), ("Business Analysis", 0.11
 def page_resource_cost():
     ss = state.get_state()
     topbar("Resource & Cost Estimate", "Estimated resources, effort, and cost for this RFP.", "💲", show_rfp=True)
+    if st.button(
+        "💰 Go to Dashboad",
+        key="dashboard",
+        type="primary",
+        use_container_width=True,
+        ):
+        go("Dashboard")
     rfp = current_rfp()
     if not rfp:
         st.info("No RFPs yet. Upload one to see the cost estimate."); return
@@ -83,7 +90,26 @@ def page_resource_cost():
         if choice == "All roles":
             cost_rows.append({"Role": "Total", "Effort (hrs)": total_hours,
                               f"Cost ({code})": f"{sym}{total_cost:,.0f}", "% of Total": "100%"})
-        st.dataframe(pd.DataFrame(cost_rows), use_container_width=True, hide_index=True)
+        df = pd.DataFrame(cost_rows)
+        # styled = (
+        #     df.style
+        #       .set_properties(**{
+        #           "background-color": "#f3fefe",
+        #           "color": "black"
+        #       })
+        #       .set_table_styles([
+        #         {
+        #             "selector": "th",
+        #             "props": [
+        #                 ("background-color", "#dafbfd"),  # Header background
+        #                 ("color", "black"),               # Header text
+        #                 ("font-weight", "bold"),
+        #                 ("text-align", "center"),
+        #             ],
+        #         },
+        #     ])
+        # )
+        st.dataframe(df, use_container_width=True, hide_index=True)
 
     with card("Resource Allocation"):
         for name, cpct, apct in sorted(shown, key=lambda r: -r[2]):
@@ -99,3 +125,13 @@ def page_resource_cost():
 
     st.info("This estimate is AI-generated based on the RFP requirements and historical data. "
             "Please review and adjust as needed.")
+
+    st.divider()
+
+    if st.button(
+        "💰 Go to Human Review",
+        key="dashboard_resource_cost",
+        type="primary",
+        use_container_width=True,
+        ):
+        go("Human Review")

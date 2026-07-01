@@ -27,18 +27,38 @@ def topbar(title, subtitle, icon="", show_rfp=False):
         st.markdown(f"<div class='tb'><div><h1>{icon} {title}</h1>"
                     f"<div class='sub'>{subtitle}</div></div></div>", unsafe_allow_html=True)
     with right:
-        cols = st.columns([2.2, 0.7]) if show_rfp else st.columns([2.6, 0.7])
+        if show_rfp:
+            cols = st.columns([2.9, 0.75, 0.75, 0.75])
+        else:
+            cols = st.columns([2.9, 0.75, 0.75, 0.75])
+
         if show_rfp:
             rfps = db.list_rfps()
             if rfps:
                 ids = [r["id"] for r in rfps]
                 lbl = {r["id"]: r["deal_name"] for r in rfps}
                 cur = ss.current_rfp if ss.current_rfp in ids else ids[0]
-                sel = cols[0].selectbox("RFP", ids, index=ids.index(cur),
-                                        format_func=lambda i: lbl[i], label_visibility="collapsed",
-                                        key=f"rfpsel_{title}")
+
+                sel = cols[0].selectbox(
+                    "RFP",
+                    ids,
+                    index=ids.index(cur),
+                    format_func=lambda i: lbl[i],
+                    label_visibility="collapsed",
+                    key=f"rfpsel_{title}",
+                )
                 ss.current_rfp = sel
-        cols[-1].markdown("<div class='avatar'>👤</div>", unsafe_allow_html=True)
+
+        with cols[1]:
+            st.markdown("<div class='avatar'>👤</div>", unsafe_allow_html=True)
+
+        with cols[2]:
+            if st.button("⚙", key=f"settings_{title}_1", help="Settings"):
+                go("Settings")
+        
+        with cols[3]:
+            if st.button("❓", key=f"help_{title}_1", help="Help"):
+                go("Help & Docs")
 
 def metric(col, ic, icon, label, value, sub):
     col.markdown(f"<div class='metric'><div class='top'><div class='lab'>{label}</div>"

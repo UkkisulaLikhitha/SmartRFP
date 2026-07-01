@@ -1,5 +1,5 @@
 ﻿import streamlit as st
-
+from datetime import date
 import database as db
 from ui.ui_utils import (topbar, go)
 from config import (SUPPORTED_TYPES, MAX_UPLOAD_MB, REVIEWER_ROLES)
@@ -24,17 +24,55 @@ def page_upload():
         client = c2.text_input("Client name", placeholder="e.g. Acme Corp")
         c3, c4, c5 = st.columns(3)
         region = c3.text_input("Region", placeholder="e.g. North America")
-        deadline = c4.text_input("Deadline", placeholder="e.g. 2026-08-15")
+        
+        deadline = c4.date_input(
+            "Deadline",
+            min_value=date.today()
+        )
         role = c5.selectbox("Assign reviewer role", REVIEWER_ROLES)
         use_web = st.checkbox("Use live web search / pricing (Agent 2)", value=True)
+    
+    analyze = st.button(
+        "⚡ Analyze & Generate Response",
+        type="primary",
+        use_container_width=True,
+        disabled=up is None
+    )
 
-    if up and st.button("⚡ Analyze & Generate Response", type="primary", use_container_width=True):
+    if up and analyze:
         try:
             raw = extract_text(up.name, up.getvalue())
         except Exception as e:
             st.error(f"Could not read that file: {e}"); return
         if len(raw.strip()) < 30:
             st.error("That file has almost no readable text."); return
+        if len(raw) < 100:
+            st.error("The document contains very little readable text.")
+            st.stop()
+
+        # Optional: ensure enough words
+        if len(raw.split()) < 20:
+            st.error("The document does not contain enough content for analysis.")
+            st.stop()
+
+        RFP_KEYWORDS = [
+            "proposal",
+            "rfp",
+            "requirements",
+            "scope",
+            "deliverables",
+        ]
+
+        text = raw.lower()
+
+        matches = sum(keyword in text for keyword in RFP_KEYWORDS)
+
+        if matches < 2:
+            st.warning(
+                "This document doesn't appear to be an RFP. "
+                "Analysis may not produce the expected results."
+            )
+
         rid = db.create_rfp(deal or up.name, client, region, deadline, "", "",
                             up.name, raw, role, "", use_web)
         bar = st.progress(0.0, text="Starting…")

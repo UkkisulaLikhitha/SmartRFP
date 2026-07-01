@@ -5,7 +5,7 @@ import pandas as pd
 import database as db
 from utils.exporter import export_txt, export_docx, export_pdf
 
-from ui.ui_utils import (topbar,current_rfp)
+from ui.ui_utils import (topbar,current_rfp, go)
 
 import state
 
@@ -47,6 +47,13 @@ def page_export():
 
     topbar("Export RFP Response", "Export your AI-generated RFP response in your preferred format.",
            "📤", show_rfp=True)
+    if st.button(
+        "💰 Go to Human Review",
+        key="dashboard_human_review",
+        type="primary",
+        use_container_width=True,
+        ):
+        go("Human Review")
     rfp = current_rfp()
     if not rfp:
         st.info("No RFPs yet. Upload one to export."); return
@@ -129,4 +136,12 @@ def page_export():
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.info("🔒 Data Security: Exported files are generated on-demand and are not stored on our servers.")
+
+    if st.button(
+        "💰 Go to AI Evaluation",
+        key="ai-eval",
+        type="primary",
+        use_container_width=True,
+        ):
+        go("AI Evaluation")
 

@@ -6,6 +6,7 @@ Deadline: 30 Jul 2026
 
 Background: 10-story office building.
 
+Requirements:
 Functional: Design, build, safety compliance.
 Non-Functional: LEED certification.
 Compliance: OSHA, local codes.

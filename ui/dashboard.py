@@ -58,7 +58,7 @@ def page_dashboard():
                     tooltip=["Status", "Count", "pct"])
                 arc = base.mark_arc(innerRadius=62, outerRadius=104)
                 txt = base.mark_text(radius=125, fontSize=11, fontWeight="bold").encode(text="label:N")
-                st.altair_chart((arc + txt).properties(height=300), use_container_width=True)
+                st.altair_chart((arc + txt).properties(height=300, background="#f3fefe"), use_container_width=True)
 
     # ---- Recent RFPs (delete option sits INSIDE the box) ----
     with right:
@@ -108,3 +108,13 @@ def page_dashboard():
                         "<div class='muted'>Average proposal length</div>"
                         "<div style='margin-top:.3rem'><span class='refpill'>24 pages</span></div>",
                         unsafe_allow_html=True)
+
+    st.divider()
+
+    if st.button(
+        "💰 Go to Resource Cost",
+        key="dashboard_resource_cost",
+        type="primary",
+        use_container_width=True,
+        ):
+        go("Resource Cost")

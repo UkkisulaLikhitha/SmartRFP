@@ -2,7 +2,7 @@
 import pandas as pd
 import database as db
 
-from ui.ui_utils import (topbar,card,current_rfp, pill)
+from ui.ui_utils import (topbar,card,current_rfp, pill, go)
 from .api import (regenerate)
 
 # =========================================================================== #
@@ -12,6 +12,13 @@ from .api import (regenerate)
 def page_review():
     topbar("Human Review & Approval", "Review the AI-generated proposal and provide feedback.",
            "🗂️", show_rfp=True)
+    if st.button(
+        "💰 Go to Resource Cost",
+        key="resource_cost",
+        type="primary",
+        use_container_width=True,
+        ):
+        go("Resource Cost")
     rfp = current_rfp()
     if not rfp:
         st.info("No RFPs yet. Upload one to review."); return
@@ -68,7 +75,7 @@ def page_review():
                 else:
                     st.toast("Type a comment first.")
                 st.rerun()
-            if st.button("🔄 Regenerate Draft",cuse_container_width=True, key="regen_all"):
+            if st.button("🔄 Regenerate Draft", use_container_width=True, key="regen_all"):
                 with st.spinner("Regenerating draft..."):
                     result = regenerate(rfp["id"])
                 if result["success"]:
@@ -83,6 +90,14 @@ def page_review():
                         f"<div class='b'>{len(sections)}</div>"
                         f"<div class='muted' style='margin-top:.5rem'>Last Updated</div>"
                         f"<div class='b'>{(rfp.get('updated_at') or '')[:16]}</div>", unsafe_allow_html=True)
+            st.divider()
+        if st.button(
+            "💰 Go to Export",
+            key="export",
+            type="primary",
+            use_container_width=True,
+            ):
+            go("Export")
 
     # --- History ---
     with card("Review History"):

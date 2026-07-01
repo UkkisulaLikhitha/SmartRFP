@@ -6,6 +6,7 @@ Deadline: 10 Sep 2026
 
 Background: Solar/wind hybrid 50MW.
 
+Requirements:
 Functional: Hybrid solution, storage.
 Non-Functional: SLA 99.95%.
 Compliance: Grid compliance.

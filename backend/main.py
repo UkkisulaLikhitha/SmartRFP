@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import make_asgi_app
+from starlette.middleware.wsgi import WSGIMiddleware
 
 from backend.routes import (
     upload,
@@ -31,3 +33,6 @@ app.include_router(export.router)
 app.include_router(pricing.router)
 app.include_router(dashboard.router)
 app.include_router(health.router)
+
+metrics_app = make_asgi_app()
+app.mount("/metrics/", metrics_app)

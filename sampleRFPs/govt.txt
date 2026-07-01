@@ -6,6 +6,7 @@ Deadline: 15 Sep 2026
 
 Background: IoT deployment for traffic and safety.
 
+Requirements:
 Functional: Traffic monitoring, safety sensors.
 Non-Functional: SLA 99.9%.
 Compliance: Open standards.

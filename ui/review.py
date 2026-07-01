@@ -2,7 +2,7 @@
 import pandas as pd
 import database as db
 
-from ui.ui_utils import (topbar,card,current_rfp, pill)
+from ui.ui_utils import (topbar,card,current_rfp, pill, go)
 from .api import (regenerate)
 
 # =========================================================================== #
@@ -12,6 +12,13 @@ from .api import (regenerate)
 def page_review():
     topbar("Human Review & Approval", "Review the AI-generated proposal and provide feedback.",
            "🗂️", show_rfp=True)
+    if st.button(
+        "💰 Go to Resource Cost",
+        key="resource_cost",
+        type="primary",
+        use_container_width=True,
+        ):
+        go("Resource Cost")
     rfp = current_rfp()
     if not rfp:
         st.info("No RFPs yet. Upload one to review."); return
@@ -93,3 +100,12 @@ def page_review():
                                        for a in log][::-1]), use_container_width=True, hide_index=True)
         else:
             st.caption("No history yet.")
+
+    st.divider()
+    if st.button(
+        "💰 Go to Export",
+        key="export",
+        type="primary",
+        use_container_width=True,
+        ):
+        go("Export")

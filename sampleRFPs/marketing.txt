@@ -6,6 +6,7 @@ Deadline: 5 Aug 2026
 
 Background: Brand seeks online growth.
 
+Requirements:
 Functional: SEO, PPC, social media campaigns.
 Non-Functional: Monthly reporting, ROI tracking.
 Compliance: GDPR for data.

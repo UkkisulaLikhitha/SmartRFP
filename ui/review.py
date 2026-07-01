@@ -90,6 +90,14 @@ def page_review():
                         f"<div class='b'>{len(sections)}</div>"
                         f"<div class='muted' style='margin-top:.5rem'>Last Updated</div>"
                         f"<div class='b'>{(rfp.get('updated_at') or '')[:16]}</div>", unsafe_allow_html=True)
+            st.divider()
+        if st.button(
+            "💰 Go to Export",
+            key="export",
+            type="primary",
+            use_container_width=True,
+            ):
+            go("Export")
 
     # --- History ---
     with card("Review History"):
@@ -100,12 +108,3 @@ def page_review():
                                        for a in log][::-1]), use_container_width=True, hide_index=True)
         else:
             st.caption("No history yet.")
-
-    st.divider()
-    if st.button(
-        "💰 Go to Export",
-        key="export",
-        type="primary",
-        use_container_width=True,
-        ):
-        go("Export")

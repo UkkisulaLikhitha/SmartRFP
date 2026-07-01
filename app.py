@@ -161,6 +161,27 @@ div[data-testid="stVerticalBlockBorderWrapper"]{ background:#fff; border:1px sol
     opacity: 1 !important;   /* Prevent Streamlit from making it look faded */
 }
 
+/* Download button */
+.stDownloadButton > button {
+    background-color: #B7EDF2 !important;
+    border-color: #B7EDF2 !important;
+    color: white !important;
+}
+
+.stDownloadButton > button:hover {
+    background-color: #A3E3E8 !important;
+    border-color: #A3E3E8 !important;
+    color: white !important;
+}
+
+.stDownloadButton > button:disabled {
+    background-color: #d9ecee !important;
+    border-color: #c9d9db !important;
+    color: #7a7a7a !important;
+    cursor: not-allowed;
+    opacity: 1 !important;
+}
+
 /* small bits */
 .muted{ color:var(--muted); } .b{ font-weight:700; color:var(--ink); }
 .refpill{ display:inline-block; background:var(--blue-l); color:var(--blue-d); border:1px solid #d6e4ff;
